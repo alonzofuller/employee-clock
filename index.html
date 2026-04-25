@@ -1,0 +1,2793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iTeam Legal Solutions – Employee Time Tracking</title>
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;min-height:100vh;color:#1a1a2e}
+:root{
+  --navy:#0d1b3e;--navy2:#1a2f5e;--gold:#c9a84c;--gold2:#e8c96d;
+  --green:#1db954;--green-bg:#e8f8ed;--yellow:#f5a623;--yellow-bg:#fff8e6;
+  --red:#e53935;--red-bg:#fdecea;--gray:#6b7280;--gray-bg:#f3f4f6;
+  --white:#ffffff;--shadow:0 2px 8px rgba(0,0,0,.12);--shadow-lg:0 4px 20px rgba(0,0,0,.18);
+  --radius:12px;--radius-sm:8px;
+}
+.header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);color:var(--white);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:70px;box-shadow:0 2px 12px rgba(0,0,0,.3);position:sticky;top:0;z-index:100}
+.header-brand{display:flex;flex-direction:column}
+.header-title{font-size:1.2rem;font-weight:700;letter-spacing:.5px}
+.header-sub{font-size:.72rem;color:var(--gold2);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.header-actions{display:flex;align-items:center;gap:10px}
+.save-status{font-size:.72rem;color:rgba(255,255,255,.6);margin-right:6px;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:.8rem;font-weight:600;letter-spacing:.3px;transition:all .2s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:var(--gold);color:var(--navy)}.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:var(--white)}.btn-outline:hover{background:rgba(255,255,255,.1)}
+.btn-sm{padding:6px 12px;font-size:.75rem}
+.btn-xs{padding:4px 8px;font-size:.68rem}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#17a548}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#c62828}
+.btn-yellow{background:var(--yellow);color:#fff}.btn-yellow:hover{background:#e59600}
+.btn-gray{background:#e5e7eb;color:#374151}.btn-gray:hover{background:#d1d5db}
+.btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--navy2)}
+.btn-purple{background:#7c3aed;color:#fff}.btn-purple:hover{background:#6d28d9}
+.main{padding:24px;max-width:1400px;margin:0 auto}
+.section-title{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.8px}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(to right,var(--gold),transparent)}
+.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-bottom:28px}
+.emp-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .2s;position:relative}
+.emp-card:hover{box-shadow:var(--shadow-lg)}
+.card-stripe{height:5px;background:var(--gray-bg)}
+.card-stripe.running{background:linear-gradient(90deg,var(--green),#52e090)}
+.card-stripe.paused{background:linear-gradient(90deg,var(--yellow),#ffd07a)}
+.card-stripe.stopped{background:linear-gradient(90deg,#cbd5e1,#e2e8f0)}
+.card-header{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #f1f5f9}
+.card-name{font-size:1rem;font-weight:700;color:var(--navy);line-height:1.2}
+.card-title{font-size:.72rem;color:var(--gray);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.card-badge{padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.badge-running{background:var(--green-bg);color:#0a7a30}
+.badge-paused{background:var(--yellow-bg);color:#a56300}
+.badge-stopped{background:var(--gray-bg);color:var(--gray)}
+.badge-exempt{background:#ede9fe;color:#5b21b6}
+.card-timer{padding:12px 16px;text-align:center;background:linear-gradient(135deg,#f8faff,#edf2ff)}
+.timer-display{font-size:2.2rem;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:2px;color:var(--navy);font-family:'Courier New',monospace}
+.timer-display.running{color:var(--green)}
+.timer-display.paused{color:var(--yellow)}
+.timer-clock-time{font-size:.72rem;color:var(--gray);margin-top:4px}
+.card-stats{padding:10px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;border-bottom:1px solid #f1f5f9}
+.stat-item{text-align:center}
+.stat-label{font-size:.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:.82rem;font-weight:700;color:var(--navy);margin-top:1px}
+.stat-value.ot{color:var(--red)}
+.card-earnings{padding:8px 16px;display:flex;align-items:center;justify-content:space-between;background:#fafbfe}
+.earnings-label{font-size:.7rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.earnings-value{font-size:.95rem;font-weight:700;color:#0d6c2f}
+.pto-info{font-size:.7rem;color:#5b21b6;font-weight:600}
+.card-actions{padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap}
+.card-audit-row{padding:6px 16px 10px;display:flex;gap:6px;border-top:1px solid #f1f5f9;background:#fafbfe}
+.name-edit-input{border:1.5px solid #cbd5e1;border-radius:6px;padding:4px 8px;font-size:.82rem;width:100%;margin-bottom:6px;outline:none}
+.name-edit-input:focus{border-color:var(--gold)}
+.hire-date{font-size:.65rem;color:var(--gray);padding:4px 16px 8px;text-align:right}
+.toast{position:fixed;top:80px;right:20px;z-index:999;padding:12px 20px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:600;box-shadow:var(--shadow-lg);max-width:360px;animation:slideIn .3s ease}
+.toast-error{background:#fff0f0;color:var(--red);border-left:4px solid var(--red)}
+.toast-success{background:var(--green-bg);color:#0a7a30;border-left:4px solid var(--green)}
+.toast-info{background:#eff6ff;color:#1d4ed8;border-left:4px solid #3b82f6}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+.modal{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:560px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-lg{max-width:780px}
+.modal-xl{max-width:1100px}
+.modal-header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--white);padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:1rem;font-weight:700;letter-spacing:.3px}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:1.4rem;line-height:1;padding:0;transition:color .2s}
+.modal-close:hover{color:#fff}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 24px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px}
+.ot-option{padding:16px 20px;border:2px solid #e5e7eb;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:14px;margin-bottom:10px}
+.ot-option:hover{border-color:var(--gold);background:#fffef5}
+.ot-option-icon{font-size:1.6rem;line-height:1}
+.ot-option-title{font-weight:700;color:var(--navy);margin-bottom:3px}
+.ot-option-desc{font-size:.78rem;color:var(--gray)}
+.report-pre{font-family:'Courier New',monospace;font-size:.78rem;line-height:1.6;background:#f8faff;border:1px solid #e2e8f0;border-radius:var(--radius-sm);padding:20px;white-space:pre-wrap;overflow-x:auto}
+.schedule-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.schedule-table th{background:var(--navy);color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px}
+.schedule-table td{padding:8px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+.schedule-table tr:nth-child(even) td{background:#f8faff}
+.sched-day-cell{display:flex;flex-direction:column;gap:2px}
+.sched-day{font-size:.7rem;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.sched-hours{font-size:.78rem;color:var(--navy);font-weight:600}
+.sched-off{color:var(--gray);font-style:italic;font-size:.72rem}
+
+/* ── EMPLOYEE EDIT MODAL ── */
+.emp-edit-modal-body{padding:24px;overflow-y:auto;flex:1}
+.emp-edit-header{display:flex;align-items:center;gap:20px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e5e7eb}
+.emp-avatar-large{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy2));display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;font-weight:700;flex-shrink:0}
+.emp-avatar-large img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.emp-edit-name-section{flex:1}
+.emp-edit-name-input{font-size:1.3rem;font-weight:700;color:var(--navy);border:none;border-bottom:2px solid transparent;padding:4px 0;width:100%;outline:none;background:transparent}
+.emp-edit-name-input:focus{border-color:var(--gold)}
+.emp-edit-title-input{font-size:.9rem;color:var(--gray);border:none;border-bottom:1px solid #e5e7eb;padding:4px 0;width:100%;outline:none;margin-top:4px}
+.emp-edit-title-input:focus{border-color:var(--gold)}
+.emp-edit-section{margin-bottom:20px}
+.emp-edit-section-title{font-size:.7rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #e5e7eb}
+.emp-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px}
+.emp-edit-field{display:flex;flex-direction:column;gap:4px}
+.emp-edit-label{font-size:.72rem;color:var(--gray);font-weight:600}
+.emp-edit-input{border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:8px 12px;font-size:.85rem;outline:none;font-family:inherit}
+.emp-edit-input:focus{border-color:var(--gold)}
+.emp-edit-input-full{width:100%;border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:8px 12px;font-size:.85rem;outline:none;font-family:inherit}
+.emp-edit-input-full:focus{border-color:var(--gold)}
+.emp-avatar-upload{display:flex;align-items:center;gap:12px}
+.emp-avatar-preview{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy2));display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;font-weight:700;flex-shrink:0;overflow:hidden}
+.emp-avatar-preview img{width:100%;height:100%;object-fit:cover}
+.emp-avatar-btn{background:var(--gray-bg);border:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:.75rem;font-weight:600;cursor:pointer;color:var(--navy)}
+.emp-avatar-btn:hover{background:#e2e8f0}
+.emp-avatar-remove{background:none;border:none;color:var(--red);font-size:.7rem;cursor:pointer;margin-left:4px}
+.emp-avatar-remove:hover{text-decoration:underline}
+
+/* ── SCHEDULE MANAGEMENT ── */
+.schedule-edit-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px}
+.schedule-day-col{background:#f8faff;border-radius:var(--radius-sm);padding:12px;text-align:center}
+.schedule-day-header{font-size:.65rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.schedule-day-toggle{display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px}
+.schedule-day-toggle input{width:16px;height:16px;accent-color:var(--navy)}
+.schedule-day-toggle label{font-size:.7rem;color:var(--gray);cursor:pointer}
+.schedule-time-input{width:100%;border:1px solid #cbd5e1;border-radius:4px;padding:6px;font-size:.72rem;text-align:center;outline:none}
+.schedule-time-input:focus{border-color:var(--gold)}
+.schedule-print-btn{background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.schedule-print-btn:hover{background:var(--navy2)}
+.schedule-list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-radius:var(--radius-sm);margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.schedule-list-info{flex:1}
+.schedule-list-name{font-weight:700;color:var(--navy);font-size:.9rem}
+.schedule-list-days{font-size:.72rem;color:var(--gray);margin-top:2px}
+.schedule-list-actions{display:flex;gap:6px}
+
+/* ── HOLIDAY SCHEDULE ── */
+.holiday-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:12px}
+.holiday-table th{background:var(--navy);color:#fff;padding:10px 12px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px}
+.holiday-table td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
+.holiday-table tr:nth-child(even) td{background:#f8faff}
+.holiday-date{font-weight:700;color:var(--navy)}
+.holiday-name{font-weight:600;color:var(--navy)}
+.holiday-status{font-size:.7rem;padding:3px 8px;border-radius:10px;font-weight:700;text-transform:uppercase}
+.holiday-status-closed{background:#fdecea;color:#991b1b}
+.holiday-status-optional{background:#fff8e6;color:#a56300}
+.holiday-status-skeleton{background:#e0f2fe;color:#075985}
+.holiday-status-none{background:#f3f4f6;color:#374151}
+.card-name-clickable{cursor:pointer;transition:color .2s}
+.card-name-clickable:hover{color:var(--gold)}
+.clear-option{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s}
+.clear-option:hover{background:var(--gray-bg)}
+.clear-option input[type=checkbox]{width:18px;height:18px;accent-color:var(--red);cursor:pointer}
+.clear-option-label{flex:1}
+.clear-option-title{font-weight:600;color:var(--navy);font-size:.88rem}
+.clear-option-desc{font-size:.72rem;color:var(--gray);margin-top:2px}
+.app-section{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:28px}
+.app-section-header{background:linear-gradient(135deg,#1a1a2e,#2d2d6b);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.app-section-title{font-size:.95rem;font-weight:700;letter-spacing:.3px}
+.app-section-brand{font-size:.68rem;color:rgba(255,255,255,.55);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.app-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;min-height:300px}
+.app-col{padding:20px;border-right:1px solid #f1f5f9}
+.app-col:last-child{border-right:none}
+.app-col-title{font-size:.72rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e8f0fe}
+.app-session-card{background:#f8faff;border:1px solid #e2e8f0;border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;position:relative}
+.app-session-name{font-weight:700;color:var(--navy);font-size:.85rem;margin-bottom:6px}
+.app-session-timer{font-size:1.4rem;font-weight:700;font-family:'Courier New',monospace;color:var(--green);margin-bottom:6px}
+.app-session-timer.paused{color:var(--yellow)}
+.app-session-timer.stopped{color:var(--gray)}
+.app-session-actions{display:flex;gap:6px;flex-wrap:wrap}
+.app-new-row{display:flex;gap:8px;margin-bottom:12px}
+.app-new-input{flex:1;border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:8px 12px;font-size:.82rem;outline:none}
+.app-new-input:focus{border-color:var(--gold)}
+.stat-card{background:#f8faff;border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.stat-card-label{font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.stat-card-value{font-size:1rem;font-weight:700;color:var(--navy)}
+.stat-card-value.earnings{color:#0d6c2f}
+.app-summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.82rem}
+.app-summary-row:last-child{border-bottom:none}
+.app-summary-name{font-weight:600;color:var(--navy)}
+.app-summary-hours{color:var(--gray)}
+.app-summary-earn{font-weight:700;color:#0d6c2f}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:.8rem}
+.cost-row:last-child{border-bottom:none}
+.cost-name{font-weight:600;color:var(--navy)}
+.cost-period{font-size:.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.cost-amount{font-weight:700;color:var(--red)}
+.cost-total{display:flex;justify-content:space-between;padding-top:10px;margin-top:6px;border-top:2px solid #e2e8f0;font-size:.82rem;font-weight:700}
+.cost-add-row{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.cost-input{border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:6px 10px;font-size:.78rem;outline:none}
+.cost-input:focus{border-color:var(--gold)}
+.cost-input-row{display:flex;gap:6px}
+
+/* ── AUDIT LOG ── */
+.audit-filter-bar{padding:14px 20px;background:#f8faff;border-bottom:1px solid #e5e7eb;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.audit-filter-group{display:flex;flex-direction:column;gap:3px}
+.audit-filter-label{font-size:.65rem;color:var(--gray);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.audit-filter-input{border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:5px 9px;font-size:.78rem;outline:none;background:#fff;min-width:130px}
+.audit-filter-input:focus{border-color:var(--gold)}
+.audit-table-wrap{overflow-x:auto;padding:0 20px 20px}
+.audit-table{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:12px;min-width:900px}
+.audit-table th{background:var(--navy);color:#fff;padding:9px 10px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;position:sticky;top:0}
+.audit-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top;max-width:200px;word-break:break-word}
+.audit-table tr:nth-child(even) td{background:#f8faff}
+.audit-table tr:hover td{background:#eff6ff}
+.audit-empty{padding:40px 20px;text-align:center;color:var(--gray);font-style:italic;font-size:.88rem}
+.audit-count{font-size:.72rem;color:var(--gray);padding:8px 20px 0;font-style:italic}
+.action-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.62rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.badge-emp-action{background:#dcfce7;color:#166534}
+.badge-admin-corr{background:#fef9c3;color:#854d0e}
+.badge-payroll-locked{background:#ede9fe;color:#5b21b6}
+.badge-system-entry{background:#e0f2fe;color:#075985}
+.badge-manual-edit{background:#fee2e2;color:#991b1b}
+.locked-icon{color:#5b21b6;font-size:.8rem}
+
+/* ── ADMIN CORRECTION ── */
+.correction-field{margin-bottom:16px}
+.correction-label{font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;display:block}
+.correction-input{width:100%;border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:8px 12px;font-size:.85rem;outline:none;font-family:inherit}
+.correction-input:focus{border-color:var(--gold)}
+.correction-current{font-size:.78rem;color:var(--gray);margin-top:4px}
+.correction-reason{width:100%;border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:8px 12px;font-size:.82rem;outline:none;font-family:inherit;resize:vertical;min-height:80px}
+.correction-reason:focus{border-color:var(--gold)}
+.correction-warning{font-size:.75rem;color:var(--red);margin-top:4px;font-weight:600}
+
+/* ── OFFICE PAYROLL PAGE ── */
+.payroll-page-wrap{position:fixed;inset:0;z-index:150;background:#f0f2f5;overflow-y:auto;display:flex;flex-direction:column}
+.payroll-page-header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:70px;box-shadow:0 2px 12px rgba(0,0,0,.3);flex-shrink:0}
+.payroll-page-main{padding:24px;max-width:1400px;margin:0 auto;width:100%;flex:1}
+.pr-tab-bar{display:flex;gap:4px;margin-bottom:20px}
+.pr-tab{background:#e5e7eb;color:#374151;border:none;padding:8px 18px;border-radius:var(--radius-sm);cursor:pointer;font-size:.8rem;font-weight:600}
+.pr-tab.active{background:var(--navy);color:#fff}
+.period-selector{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.period-label{font-size:.68rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
+.period-input{border:1.5px solid #cbd5e1;border-radius:var(--radius-sm);padding:8px 12px;font-size:.85rem;outline:none;font-family:inherit}
+.period-input:focus{border-color:var(--gold)}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.summary-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;text-align:center}
+.summary-card-label{font-size:.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.summary-card-value{font-size:1.3rem;font-weight:700;color:var(--navy);margin-top:4px}
+.summary-card-value.sc-gold{color:var(--gold)}
+.summary-card-value.sc-green{color:#0d6c2f}
+.summary-card-value.sc-red{color:var(--red)}
+.pr-table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.pr-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.pr-table th{background:var(--navy);color:#fff;padding:10px 11px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.pr-table td{padding:9px 11px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.pr-table tr.pr-emp-row:hover td{background:#eff6ff;cursor:pointer}
+.pr-table tr.pr-emp-row.expanded td{background:#f0f4ff}
+.pr-expand-row td{background:#f8faff!important;padding:0!important;border-bottom:2px solid #e2e8f0}
+.pr-expand-inner{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pr-expand-section{font-size:.78rem}
+.pr-expand-title{font-size:.68rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+.pr-expand-row2{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;font-size:.75rem}
+.pr-expand-row2:last-child{border-bottom:none}
+.pr-action-bar{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 20px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:12px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.sp-draft{background:#f3f4f6;color:#374151}
+.sp-review{background:#fef9c3;color:#854d0e}
+.sp-approved{background:#dcfce7;color:#166534}
+.sp-locked{background:#ede9fe;color:#5b21b6}
+.sp-paid{background:#e0f2fe;color:#075985}
+.history-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.history-table th{background:#f3f4f6;color:#374151;padding:8px 12px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+.history-table td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.history-table tr:hover td{background:#f8faff;cursor:pointer}
+.deduct-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:.75rem}
+.deduct-item:last-child{border-bottom:none}
+.approve-warning{background:#fef9c3;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:18px;font-size:.82rem;color:#78350f;line-height:1.5}
+
+/* ── LIVE PAYROLL DASHBOARD ── */
+.payroll-dashboard{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:var(--radius);box-shadow:var(--shadow-lg);margin-bottom:24px;overflow:hidden}
+.prd-header{padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.1)}
+.prd-title{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.4px}
+.prd-sub{font-size:.68rem;color:var(--gold2);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.prd-alert{padding:11px 20px;font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.prd-alert-exceeded{background:#b91c1c;color:#fff}
+.prd-alert-warning{background:#d97706;color:#fff}
+.prd-cap-wrap{padding:14px 20px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.prd-cap-track{height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden}
+.prd-cap-fill{height:100%;border-radius:5px;transition:width .6s ease,background .4s}
+.prd-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.prd-stat-group{padding:16px 20px;border-right:1px solid rgba(255,255,255,.08)}
+.prd-stat-group:last-child{border-right:none}
+.prd-group-label{font-size:.62rem;font-weight:700;color:var(--gold2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.prd-stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.prd-stat{background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;text-align:center}
+.prd-stat-label{font-size:.6rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.prd-stat-val{font-size:.92rem;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.prd-stat-val.prd-money{color:#86efac}
+.prd-owner{border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;background:rgba(255,255,255,.04)}
+.prd-owner-label{font-size:.6rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:6px}
+.prd-owner-row{display:flex;gap:20px;align-items:center;font-size:.78rem;color:rgba(255,255,255,.65);flex-wrap:wrap}
+.prd-owner-name{font-weight:700;color:rgba(255,255,255,.9)}
+/* ── ADD EMPLOYEE CARD ── */
+.add-emp-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:2px dashed #cbd5e1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px;cursor:pointer;transition:all .2s;padding:24px}
+.add-emp-card:hover{border-color:var(--gold);background:#fffef5;box-shadow:var(--shadow-lg)}
+.add-emp-icon{font-size:2.4rem;color:#cbd5e1;transition:color .2s;margin-bottom:8px;font-weight:300;line-height:1}
+.add-emp-card:hover .add-emp-icon{color:var(--gold)}
+.add-emp-text{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+.add-emp-sub{font-size:.72rem;color:var(--gray);text-align:center}
+/* ── INACTIVE STAFF SECTION ── */
+.inactive-section-header{display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:0;padding:8px 0;user-select:none}
+.inactive-section-header .section-title{margin-bottom:0;flex:1}
+@media(max-width:900px){.prd-grid{grid-template-columns:1fr}.prd-stat-group{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}}
+@media print{
+  .header,.card-actions,.header-actions,.app-section,.btn,.card-audit-row{display:none!important}
+  .modal-overlay{position:static;background:none;backdrop-filter:none}
+  .modal{max-width:100%;box-shadow:none}
+  .payroll-page-header .btn{display:none!important}
+  body{background:#fff}
+}
+@media(max-width:900px){.app-grid{grid-template-columns:1fr}.app-col{border-right:none;border-bottom:1px solid #f1f5f9}}
+@media(max-width:600px){.header{padding:0 14px}.header-title{font-size:1rem}.emp-grid{grid-template-columns:1fr}}
+/* ── SIDEBAR LAYOUT ── */
+.app-shell{display:flex;min-height:calc(100vh - 70px)}
+.sidebar{width:240px;background:var(--navy);flex-shrink:0;position:sticky;top:70px;height:calc(100vh - 70px);overflow-y:auto;display:flex;flex-direction:column;z-index:50;border-right:1px solid rgba(255,255,255,.07)}
+.sidebar-brand{padding:18px 20px 15px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-brand-title{font-size:.78rem;font-weight:700;color:var(--gold2);text-transform:uppercase;letter-spacing:1.3px}
+.sidebar-section{padding:10px 0 4px}
+.sidebar-section-label{padding:8px 20px 5px;font-size:.6rem;color:rgba(255,255,255,.3);font-weight:700;text-transform:uppercase;letter-spacing:1.2px;display:flex;align-items:center;gap:8px}
+.sidebar-section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+.sidebar-link{display:flex;align-items:center;gap:9px;padding:10px 20px 10px 26px;color:rgba(255,255,255,.6);font-size:.82rem;font-weight:500;cursor:pointer;border:none;border-left:3px solid transparent;background:none;width:100%;text-align:left;transition:all .15s;line-height:1.3}
+.sidebar-link:hover{background:rgba(255,255,255,.07);color:#fff}
+.sidebar-link.active{background:rgba(201,168,76,.13);color:var(--gold2);border-left-color:var(--gold);font-weight:700}
+.content-area{flex:1;min-width:0;overflow-x:hidden;background:#f0f2f5}
+.page-view{display:none}
+.page-view.active{display:block}
+.page-title-bar{font-size:.7rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;padding:0 0 12px;opacity:.55}
+@media print{.sidebar{display:none!important}}
+@media(max-width:900px){.sidebar{width:56px}.sidebar-brand-title,.sidebar-section-label{display:none}.sidebar-link{padding:12px;justify-content:center;font-size:1.1rem}.content-area .main{padding:16px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ==================== CONSTANTS ====================
+const STORAGE_KEY   = 'iteam_v3';
+const STORAGE_APPS  = 'iteam_apps_v2';
+const STORAGE_COSTS = 'iteam_app_costs_v1';
+const STORAGE_AUDIT   = 'iteam_audit_v1';
+const STORAGE_PAYROLL = 'iteam_payroll_v1';
+const WEEKLY_PAYROLL_CAP = 1250;
+const TZ = 'America/Chicago';
+const OT_DAILY_SEC  = 8 * 3600;
+const OT_WEEKLY_SEC = 40 * 3600;
+const AUTOSAVE_MS   = 3 * 60 * 1000;
+const DEV_RATE      = 35;
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+const STD_SCHED = {
+  Monday:{start:'9:00am',end:'5:00pm'},Tuesday:{start:'9:00am',end:'5:00pm'},
+  Wednesday:{start:'9:00am',end:'5:00pm'},Thursday:{start:'9:00am',end:'5:00pm'},
+  Friday:{start:'9:00am',end:'5:00pm'}
+};
+
+const EMPLOYEE_CONFIGS = [
+  {id:0,name:'Alonzo Fuller',     title:'Administrator',    hireDate:'01/15/2020',hourlyWage:35,   wageType:'hourly',assignedHours:{...STD_SCHED},isExempt:true, isNameEditable:false,isOwner:true, isHidden:false},
+  {id:1,name:'Christina Roper',   title:'Office Manager',   hireDate:'03/22/2021',hourlyWage:16.75,wageType:'hourly',assignedHours:{...STD_SCHED},isExempt:false,isNameEditable:false,isOwner:false,isHidden:false},
+  {id:2,name:'Tempress Harden',   title:'Legal Assistant I',hireDate:'06/10/2022',hourlyWage:12,   wageType:'hourly',assignedHours:{...STD_SCHED},isExempt:false,isNameEditable:false,isOwner:false,isHidden:false},
+  {id:3,name:'Yareli Tlahuel',    title:'Intern in Training',hireDate:'09/01/2023',hourlyWage:11.25,wageType:'hourly',assignedHours:{...STD_SCHED},isExempt:false,isNameEditable:false,isOwner:false,isHidden:false},
+  {id:4,name:'Employee 5',        title:'',                 hireDate:'',          hourlyWage:0,    wageType:'hourly',assignedHours:{},            isExempt:false,isNameEditable:true, isOwner:false,isHidden:true},
+  {id:5,name:'Employee 6',        title:'',                 hireDate:'',          hourlyWage:0,    wageType:'hourly',assignedHours:{},            isExempt:false,isNameEditable:true, isOwner:false,isHidden:true},
+];
+
+const DEFAULT_COSTS = [
+  {id:'c1',name:'Claude AI',        cost:20,   period:'monthly',category:'AI'},
+  {id:'c2',name:'Google Workspace', cost:12,   period:'monthly',category:'Productivity'},
+  {id:'c3',name:'Canva Pro',        cost:12.99,period:'monthly',category:'Design'},
+  {id:'c4',name:'GitHub',           cost:4,    period:'monthly',category:'Dev'},
+];
+
+const ACTION_META = {
+  CLOCK_IN:         {text:'Clock In',        badge:'emp-action',   category:'Employee Action'},
+  BREAK_START:      {text:'Start Break',     badge:'emp-action',   category:'Employee Action'},
+  BREAK_END:        {text:'End Break',       badge:'emp-action',   category:'Employee Action'},
+  CLOCK_OUT:        {text:'Clock Out',       badge:'emp-action',   category:'Employee Action'},
+  ADMIN_CORRECTION: {text:'Admin Correction',badge:'admin-corr',   category:'Admin Correction'},
+  PAYROLL_LOCKED:   {text:'Payroll Locked',  badge:'payroll-locked',category:'Payroll Locked'},
+  SYSTEM_ENTRY:     {text:'System Entry',    badge:'system-entry', category:'System Entry'},
+  MANUAL_EDIT:      {text:'Manual Edit',     badge:'manual-edit',  category:'Manual Edit'},
+  NAME_EDIT:        {text:'Name Changed',    badge:'manual-edit',  category:'Manual Edit'},
+  OVERTIME_CHOICE:  {text:'OT Decision',     badge:'system-entry', category:'System Entry'},
+};
+
+// ==================== DATE/TIME UTILS ====================
+function getCTNow() {
+  return new Date(new Date().toLocaleString('en-US',{timeZone:TZ}));
+}
+function getCTDateStr(d) {
+  const dt = d||getCTNow();
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+function getCTWeekStr(d) {
+  const dt = new Date((d||getCTNow()).getTime());
+  dt.setHours(0,0,0,0);
+  dt.setDate(dt.getDate()+3-(dt.getDay()+6)%7);
+  const w1 = new Date(dt.getFullYear(),0,4);
+  const wn = 1+Math.round(((dt-w1)/86400000-3+(w1.getDay()+6)%7)/7);
+  return `${dt.getFullYear()}-W${String(wn).padStart(2,'0')}`;
+}
+function getCTMonthStr(d) {
+  const dt = d||getCTNow();
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+}
+function getNowSec() {
+  const n = getCTNow();
+  return n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
+}
+function parseTimeSec(s) {
+  const lo=(s||'').toLowerCase().trim();
+  const isPM=lo.includes('pm');
+  const [h,m]=lo.replace(/[apm\s]/g,'').split(':').map(Number);
+  let hrs=h;
+  if(isPM&&h!==12)hrs+=12;
+  if(!isPM&&h===12)hrs=0;
+  return hrs*3600+(m||0)*60;
+}
+function fmtSec(s) {
+  const sec=Math.max(0,Math.floor(s||0));
+  return `${String(Math.floor(sec/3600)).padStart(2,'0')}:${String(Math.floor((sec%3600)/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+}
+function fmtHM(s) {
+  const sec=Math.max(0,Math.floor(s||0));
+  return `${Math.floor(sec/3600)}h ${String(Math.floor((sec%3600)/60)).padStart(2,'0')}m`;
+}
+function fmtMoney(n) {
+  return '$'+(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+function fmtTS(ms) {
+  if(!ms)return '—';
+  return new Date(ms).toLocaleString('en-US',{timeZone:TZ,month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+}
+function fmtTSFull(ms) {
+  if(!ms)return '—';
+  return new Date(ms).toLocaleString('en-US',{timeZone:TZ,month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
+}
+function fmtTimeOnly(ms) {
+  if(!ms)return '—';
+  return new Date(ms).toLocaleString('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
+}
+
+// ==================== HOLIDAYS ====================
+function nthWeekday(yr,mo,wd,nth) {
+  const d=new Date(yr,mo-1,1);let c=0;
+  while(d.getMonth()===mo-1){if(d.getDay()===wd){c++;if(c===nth)return getCTDateStr(d);}d.setDate(d.getDate()+1);}
+  return null;
+}
+function lastWeekday(yr,mo,wd) {
+  const d=new Date(yr,mo,0);
+  while(d.getDay()!==wd)d.setDate(d.getDate()-1);
+  return getCTDateStr(d);
+}
+function buildHolidays(yr) {
+  // State Holiday Schedule for Fiscal Year 2026
+  const holidays = [
+    {date:`${yr}-09-01`,name:'Labor Day',status:'closed'},
+    {date:`${yr}-09-23`,name:'Rosh Hashanah',status:'optional'},
+    {date:`${yr}-09-24`,name:'Rosh Hashanah',status:'optional'},
+    {date:`${yr}-10-02`,name:'Yom Kippur',status:'optional'},
+    {date:`${yr}-11-11`,name:'Veterans Day',status:'closed'},
+    {date:`${yr}-11-27`,name:'Thanksgiving Day',status:'closed'},
+    {date:`${yr}-11-28`,name:'Day after Thanksgiving',status:'closed'},
+    {date:`${yr}-12-24`,name:'Christmas Eve Day',status:'closed'},
+    {date:`${yr}-12-25`,name:'Christmas Day',status:'closed'},
+    {date:`${yr}-12-26`,name:'Day after Christmas',status:'closed'},
+    {date:`${yr+1}-01-01`,name:"New Year's Day",status:'closed'},
+    {date:`${yr+1}-01-19`,name:'Martin Luther King, Jr. Day',status:'closed'},
+    {date:`${yr+1}-01-19`,name:'Confederate Heroes Day',status:'closed'},
+    {date:`${yr+1}-02-16`,name:'Presidents\' Day',status:'closed'},
+    {date:`${yr+1}-03-02`,name:'Texas Independence Day',status:'skeleton'},
+    {date:`${yr+1}-04-03`,name:'Good Friday',status:'optional'},
+    {date:`${yr+1}-04-21`,name:'San Jacinto Day',status:'skeleton'},
+    {date:`${yr+1}-05-25`,name:'Memorial Day',status:'closed'},
+    {date:`${yr+1}-06-19`,name:'Emancipation Day',status:'skeleton'},
+    {date:`${yr+1}-07-04`,name:'Independence Day',status:'closed'},
+    {date:`${yr+1}-08-27`,name:'LBJ Day',status:'skeleton'},
+  ];
+  return new Set(holidays.map(h => h.date));
+}
+
+// FY 2026 State Holiday Schedule with full details
+const STATE_HOLIDAYS_FY2026 = [
+  {date:'2025-09-01',name:'Labor Day',status:'closed',day:'Monday'},
+  {date:'2025-09-23',name:'Rosh Hashanah',status:'optional',day:'Tuesday'},
+  {date:'2025-09-24',name:'Rosh Hashanah',status:'optional',day:'Wednesday'},
+  {date:'2025-10-02',name:'Yom Kippur',status:'optional',day:'Thursday'},
+  {date:'2025-11-11',name:'Veterans Day',status:'closed',day:'Tuesday'},
+  {date:'2025-11-27',name:'Thanksgiving Day',status:'closed',day:'Thursday'},
+  {date:'2025-11-28',name:'Day after Thanksgiving',status:'closed',day:'Friday'},
+  {date:'2025-12-24',name:'Christmas Eve Day',status:'closed',day:'Wednesday'},
+  {date:'2025-12-25',name:'Christmas Day',status:'closed',day:'Thursday'},
+  {date:'2025-12-26',name:'Day after Christmas',status:'closed',day:'Friday'},
+  {date:'2026-01-01',name:"New Year's Day",status:'closed',day:'Thursday'},
+  {date:'2026-01-19',name:'Martin Luther King, Jr. Day',status:'closed',day:'Monday'},
+  {date:'2026-01-19',name:'Confederate Heroes Day',status:'closed',day:'Monday'},
+  {date:'2026-02-16',name:'Presidents\' Day',status:'closed',day:'Monday'},
+  {date:'2026-03-02',name:'Texas Independence Day',status:'skeleton',day:'Monday'},
+  {date:'2026-04-03',name:'Good Friday',status:'optional',day:'Friday'},
+  {date:'2026-04-21',name:'San Jacinto Day',status:'skeleton',day:'Tuesday'},
+  {date:'2026-05-25',name:'Memorial Day',status:'closed',day:'Monday'},
+  {date:'2026-06-19',name:'Emancipation Day',status:'skeleton',day:'Friday'},
+  {date:'2026-07-04',name:'Independence Day',status:'closed',day:'Saturday'},
+  {date:'2026-08-27',name:'LBJ Day',status:'skeleton',day:'Thursday'},
+];
+
+function getHolidayStatus(ds) {
+  const holiday = STATE_HOLIDAYS_FY2026.find(h => h.date === ds);
+  return holiday ? holiday.status : null;
+}
+
+function getHolidayInfo(ds) {
+  return STATE_HOLIDAYS_FY2026.find(h => h.date === ds) || null;
+}
+const holidayCache={};
+function isHoliday(ds) {
+  const yr=parseInt(ds);
+  if(!holidayCache[yr])holidayCache[yr]=buildHolidays(yr);
+  return holidayCache[yr].has(ds);
+}
+function getHolidayName(ds) {
+  const names={'01-01':"New Year's Day",'06-19':'Juneteenth','07-04':'Independence Day',
+    '11-11':'Veterans Day','12-25':'Christmas Day','01-19':'Confederate Heroes Day',
+    '03-02':'Texas Independence Day','04-21':'San Jacinto Day','08-27':'LBJ Birthday'};
+  return names[ds.slice(5)]||'Holiday';
+}
+
+// ==================== AUDIT UTILS ====================
+function getDevice() {
+  const ua=navigator.userAgent;
+  if(/iPhone|iPad|iPod/.test(ua))return 'iOS';
+  if(/Android/.test(ua))return 'Android';
+  if(/Windows/.test(ua))return 'Windows';
+  if(/Mac/.test(ua))return 'Mac';
+  return 'Browser';
+}
+function mkAuditEntry({empId,empName,actionType,originalValue,newValue,performedBy,isAdminEdit,reason,payrollPeriod}) {
+  const meta=ACTION_META[actionType]||ACTION_META.SYSTEM_ENTRY;
+  return {
+    id:`${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+    employeeId:empId, employeeName:empName,
+    actionType, label:meta.category,
+    date:getCTDateStr(), timestamp:Date.now(),
+    originalValue:originalValue??null, newValue:newValue??null,
+    performedBy:performedBy||empName,
+    isAdminEdit:!!isAdminEdit, reason:reason||null,
+    device:getDevice(), payrollPeriod:payrollPeriod||getCTWeekStr(),
+    isLocked:false,
+  };
+}
+function loadAuditLog() {
+  try{return JSON.parse(localStorage.getItem(STORAGE_AUDIT)||'[]');}catch(e){return [];}
+}
+
+// ==================== TIMER LOGIC ====================
+function getElapsedSec(t) {
+  if(!t.isRunning&&!t.isPaused)return 0;
+  const now=Date.now();
+  if(t.isRunning)return Math.max(0,(now-t.clockInTime-(t.totalPausedMs||0))/1000);
+  return Math.max(0,(t.pauseStartTime-t.clockInTime-(t.totalPausedMs||0))/1000);
+}
+function getTodaySec(t){return(t.todaySavedSec||0)+getElapsedSec(t);}
+function getWeekSec(t){const wk=getCTWeekStr();return(t.weekSavedSec||0)+(t.lastWeek===wk?getElapsedSec(t):0);}
+function getMonthSec(t){const mo=getCTMonthStr();return(t.monthSavedSec||0)+(t.lastMonth===mo?getElapsedSec(t):0);}
+function getOTSec(t){return Math.max(0,getTodaySec(t)-OT_DAILY_SEC);}
+function calcDailyEarnings(t) {
+  if(!t.hourlyWage)return 0;
+  if(t.wageType==='flat'){
+    const today=getCTDateStr();
+    const n=(t.sessions||[]).filter(s=>s.date===today).length+((t.isRunning||t.isPaused)&&t.lastDate===today?1:0);
+    return n*t.hourlyWage;
+  }
+  return(getTodaySec(t)/3600)*t.hourlyWage;
+}
+function calcWeeklyEarnings(t) {
+  if(!t.hourlyWage)return 0;
+  if(t.wageType==='flat'){
+    const wk=getCTWeekStr();
+    const n=(t.sessions||[]).filter(s=>getCTWeekStr(new Date(s.date))===wk).length+((t.isRunning||t.isPaused)&&t.lastWeek===wk?1:0);
+    return n*t.hourlyWage;
+  }
+  return(getWeekSec(t)/3600)*t.hourlyWage;
+}
+function calcMonthlyEarnings(t) {
+  if(!t.hourlyWage)return 0;
+  if(t.wageType==='flat'){
+    const mo=getCTMonthStr();
+    const n=(t.sessions||[]).filter(s=>s.date&&s.date.startsWith(mo)).length+((t.isRunning||t.isPaused)&&t.lastMonth===mo?1:0);
+    return n*t.hourlyWage;
+  }
+  return(getMonthSec(t)/3600)*t.hourlyWage;
+}
+function calcEarnings(t,sec){
+  if(!t.hourlyWage)return 0;
+  if(t.wageType==='flat')return t.hourlyWage;
+  return(sec/3600)*t.hourlyWage;
+}
+function getScheduleEndSec(t) {
+  const dn=DAYS[getCTNow().getDay()];
+  const s=t.assignedHours&&t.assignedHours[dn];
+  if(!s)return null;
+  return parseTimeSec(s.end);
+}
+function canClockIn(t) {
+  if(t.isExempt)return{ok:true};
+  const now=getCTNow();const ds=getCTDateStr(now);const dn=DAYS[now.getDay()];
+  if(dn==='Saturday'||dn==='Sunday')return{ok:false,reason:'Office closed on weekends'};
+  if(isHoliday(ds))return{ok:false,reason:'Office closed — '+getHolidayName(ds)};
+  const sched=t.assignedHours&&t.assignedHours[dn];
+  if(!sched)return{ok:false,reason:'No schedule assigned for today'};
+  const nowSec=getNowSec();const startSec=parseTimeSec(sched.start);const endSec=parseTimeSec(sched.end);
+  if(nowSec<startSec)return{ok:false,reason:`Shift opens at ${sched.start}`};
+  if(nowSec>endSec)return{ok:false,reason:'Shift has ended for today'};
+  return{ok:true};
+}
+function doCheckResets(t) {
+  const ds=getCTDateStr();const wk=getCTWeekStr();const mo=getCTMonthStr();
+  let u={...t};
+  if(u.lastDate!==ds){u.todaySavedSec=0;u.lastDate=ds;}
+  if(u.lastWeek!==wk){u.weekSavedSec=0;u.lastWeek=wk;}
+  if(u.lastMonth!==mo){u.monthSavedSec=0;u.lastMonth=mo;}
+  return u;
+}
+function doClockIn(t) {
+  return{...t,isRunning:true,isPaused:false,clockInTime:Date.now(),pauseStartTime:null,
+    totalPausedMs:0,lastDate:getCTDateStr(),lastWeek:getCTWeekStr(),lastMonth:getCTMonthStr(),otMode:t.otMode||'paid'};
+}
+function doPause(t) {
+  if(!t.isRunning)return t;
+  return{...t,isRunning:false,isPaused:true,pauseStartTime:Date.now()};
+}
+function doResume(t) {
+  if(!t.isPaused)return t;
+  const pms=Date.now()-t.pauseStartTime;
+  return{...t,isRunning:true,isPaused:false,pauseStartTime:null,totalPausedMs:(t.totalPausedMs||0)+pms};
+}
+function doClockOut(t,mode) {
+  const elapsed=getElapsedSec(t);
+  const todayNew=(t.todaySavedSec||0)+elapsed;
+  const wk=getCTWeekStr();const mo=getCTMonthStr();
+  const weekNew=(t.weekSavedSec||0)+(t.lastWeek===wk?elapsed:0);
+  const monthNew=(t.monthSavedSec||0)+(t.lastMonth===mo?elapsed:0);
+  const otSec=Math.max(0,todayNew-OT_DAILY_SEC);
+  let ptoCredits=t.ptoCredits||0;let ptoHours=t.ptoHours||0;
+  if((mode||t.otMode)==='credits'&&otSec>0){
+    const ec=Math.floor(otSec/3600);ptoCredits+=ec;
+    const newPTOH=Math.floor(ptoCredits/30)*10;if(newPTOH>ptoHours)ptoHours=newPTOH;
+  }
+  const clockOutMs=Date.now();
+  const breakSec=Math.max(0,Math.floor((clockOutMs-t.clockInTime)/1000)-Math.floor(elapsed));
+  const session={date:getCTDateStr(),clockIn:t.clockInTime,clockOut:clockOutMs,seconds:elapsed,breakSec,overtimeSec:otSec,mode:mode||t.otMode||'paid'};
+  return{...t,isRunning:false,isPaused:false,clockInTime:null,pauseStartTime:null,totalPausedMs:0,
+    todaySavedSec:todayNew,weekSavedSec:weekNew,monthSavedSec:monthNew,ptoCredits,ptoHours,
+    sessions:[...(t.sessions||[]).slice(-29),session],lastDate:getCTDateStr(),lastWeek:wk,lastMonth:mo};
+}
+
+// ==================== STORAGE ====================
+function loadTimers() {
+  try {
+    const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+    const standard=EMPLOYEE_CONFIGS.map(cfg=>{
+      const sv=saved.find(s=>s.id===cfg.id)||{};
+      return{...cfg,...sv,name:sv.name||cfg.name,isRunning:false,isPaused:false,
+        clockInTime:null,pauseStartTime:null,totalPausedMs:0,
+        todaySavedSec:sv.todaySavedSec||0,weekSavedSec:sv.weekSavedSec||0,monthSavedSec:sv.monthSavedSec||0,
+        ptoCredits:sv.ptoCredits||0,ptoHours:sv.ptoHours||0,
+        lastDate:sv.lastDate||null,lastWeek:sv.lastWeek||null,lastMonth:sv.lastMonth||null,
+        sessions:sv.sessions||[],otMode:sv.otMode||'paid',
+        isOwner:sv.isOwner!==undefined?sv.isOwner:cfg.isOwner||false,
+        isHidden:sv.isHidden!==undefined?sv.isHidden:cfg.isHidden||false};
+    });
+    const custom=saved.filter(s=>s.id>=100).map(sv=>({
+      ...sv,isRunning:false,isPaused:false,clockInTime:null,pauseStartTime:null,totalPausedMs:0,
+      todaySavedSec:sv.todaySavedSec||0,weekSavedSec:sv.weekSavedSec||0,monthSavedSec:sv.monthSavedSec||0,
+      ptoCredits:sv.ptoCredits||0,ptoHours:sv.ptoHours||0,
+      lastDate:sv.lastDate||null,lastWeek:sv.lastWeek||null,lastMonth:sv.lastMonth||null,
+      sessions:sv.sessions||[],otMode:sv.otMode||'paid',
+      isOwner:sv.isOwner||false,isHidden:sv.isHidden||false}));
+    return[...standard,...custom];
+  }catch(e){return EMPLOYEE_CONFIGS.map(cfg=>mkFreshTimer(cfg));}
+}
+function mkFreshTimer(cfg) {
+  return{...cfg,isRunning:false,isPaused:false,clockInTime:null,pauseStartTime:null,totalPausedMs:0,
+    todaySavedSec:0,weekSavedSec:0,monthSavedSec:0,ptoCredits:0,ptoHours:0,
+    lastDate:null,lastWeek:null,lastMonth:null,sessions:[],otMode:'paid'};
+}
+function loadAppSessions(){try{return JSON.parse(localStorage.getItem(STORAGE_APPS)||'[]');}catch(e){return[];}}
+function loadAppCosts(){try{const s=JSON.parse(localStorage.getItem(STORAGE_COSTS)||'null');return s||DEFAULT_COSTS;}catch(e){return DEFAULT_COSTS;}}
+function loadPayrollPeriods(){try{return JSON.parse(localStorage.getItem(STORAGE_PAYROLL)||'[]');}catch(e){return[];}}
+function savePayrollPeriods(periods){try{localStorage.setItem(STORAGE_PAYROLL,JSON.stringify(periods));}catch(e){}}
+
+// ==================== PAYROLL UTILS ====================
+function calcPayrollForEmployee(timer, startDate, endDate) {
+  const sessions=(timer.sessions||[]).filter(s=>s.date>=startDate&&s.date<=endDate);
+  const breakSec=sessions.reduce((sum,s)=>sum+(s.breakSec||0),0);
+  // Group by ISO week to compute OT per week
+  const weekMap={};
+  sessions.forEach(s=>{
+    const wk=getCTWeekStr(new Date(s.date));
+    weekMap[wk]=(weekMap[wk]||0)+(s.seconds||0);
+  });
+  let regularSec=0,overtimeSec=0;
+  Object.values(weekMap).forEach(wkSec=>{
+    if(timer.isExempt){regularSec+=wkSec;}
+    else{regularSec+=Math.min(wkSec,OT_WEEKLY_SEC);overtimeSec+=Math.max(0,wkSec-OT_WEEKLY_SEC);}
+  });
+  let grossPay=0;
+  if(timer.wageType==='flat'){
+    grossPay=timer.hourlyWage; // flat rate per period (one value regardless of days)
+  }else{
+    grossPay=(regularSec/3600)*timer.hourlyWage+(overtimeSec/3600)*timer.hourlyWage*1.5;
+  }
+  return{sessions,regularSec,overtimeSec,breakSec,grossPay:Math.max(0,grossPay),sessionCount:sessions.length};
+}
+function mkPayrollEmployee(timer, startDate, endDate) {
+  const calc=calcPayrollForEmployee(timer,startDate,endDate);
+  return{employeeId:timer.id,employeeName:timer.name,title:timer.title,wageType:timer.wageType,
+    hourlyWage:timer.hourlyWage,isExempt:timer.isExempt,...calc,
+    deductions:[],adjustments:[],totalDeductions:0,totalAdjustments:0,
+    finalPay:calc.grossPay,flatRateConfirmed:false};
+}
+function mkPayrollPeriod(timers, startDate, endDate) {
+  return{id:Date.now().toString(),periodStart:startDate,periodEnd:endDate,status:'draft',
+    generatedAt:Date.now(),approvedAt:null,approvedBy:null,lockedAt:null,paidAt:null,
+    employees:timers.map(t=>mkPayrollEmployee(t,startDate,endDate))};
+}
+function recalcEmpFinalPay(emp){
+  return Math.max(0,emp.grossPay-emp.totalDeductions+emp.totalAdjustments);
+}
+function payrollSummary(period) {
+  if(!period)return{empCount:0,regularSec:0,overtimeSec:0,breakSec:0,grossPay:0,totalDeductions:0,totalAdjustments:0,finalPay:0};
+  const e=period.employees;
+  return{
+    empCount:e.length,
+    regularSec:e.reduce((s,x)=>s+x.regularSec,0),
+    overtimeSec:e.reduce((s,x)=>s+x.overtimeSec,0),
+    breakSec:e.reduce((s,x)=>s+x.breakSec,0),
+    grossPay:e.reduce((s,x)=>s+x.grossPay,0),
+    totalDeductions:e.reduce((s,x)=>s+x.totalDeductions,0),
+    totalAdjustments:e.reduce((s,x)=>s+x.totalAdjustments,0),
+    finalPay:e.reduce((s,x)=>s+x.finalPay,0),
+  };
+}
+function exportPayrollCSV(period) {
+  const headers=['Employee','Role','Pay Type','Rate','Regular Hrs','Break Time','OT Hrs','Gross Pay','Deductions','Adjustments','Final Pay','Status'];
+  const rows=period.employees.map(e=>[
+    e.employeeName,e.title,
+    e.wageType==='flat'?'Flat Rate':e.isExempt?'Exempt':'Hourly',
+    e.wageType==='flat'?`$${e.hourlyWage} flat`:`$${e.hourlyWage}/hr`,
+    fmtHM(e.regularSec),fmtHM(e.breakSec),fmtHM(e.overtimeSec),
+    e.grossPay.toFixed(2),e.totalDeductions.toFixed(2),e.totalAdjustments.toFixed(2),
+    e.finalPay.toFixed(2),period.status.toUpperCase(),
+  ]);
+  const totals=payrollSummary(period);
+  rows.push(['TOTALS','','','',fmtHM(totals.regularSec),fmtHM(totals.breakSec),fmtHM(totals.overtimeSec),
+    totals.grossPay.toFixed(2),totals.totalDeductions.toFixed(2),totals.totalAdjustments.toFixed(2),totals.finalPay.toFixed(2),'']);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`payroll-${period.periodStart}-to-${period.periodEnd}.csv`;a.click();
+}
+
+// ==================== REPORT ====================
+function generatePayrollReport(timers) {
+  const now=getCTNow();
+  const ts=now.toLocaleString('en-US',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+  let rpt=['╔══════════════════════════════════════════════════════════╗',
+    '║       iTeam Legal Solutions – Employee Time Tracking     ║',
+    '║                   PAYROLL / TIME REPORT                  ║',
+    '╚══════════════════════════════════════════════════════════╝','',
+    `  Generated: ${ts}`,`  Period: Week of ${getCTWeekStr()} | Month: ${getCTMonthStr()}`,'',
+    '─'.repeat(62),''].join('\n');
+  timers.forEach(t=>{
+    const todaySec=getTodaySec(t);const weekSec=getWeekSec(t);const monthSec=getMonthSec(t);
+    const otSec=getOTSec(t);const earnings=calcEarnings(t,todaySec);
+    const status=t.isRunning?'● CLOCKED IN':t.isPaused?'◐ ON BREAK':'○ Clocked Out';
+    rpt+=`  EMPLOYEE: ${t.name}\n  Title:    ${t.title}\n  Hire:     ${t.hireDate||'N/A'}    Exempt: ${t.isExempt?'Yes':'No'}\n`;
+    rpt+=`  Status:   ${status}\n`;
+    if(t.isRunning)rpt+=`  Clocked In Since: ${fmtTS(t.clockInTime)}\n`;
+    rpt+=`\n  TODAY:    ${fmtHM(todaySec).padEnd(16)} (${fmtSec(todaySec)})\n`;
+    rpt+=`  WEEK:     ${fmtHM(weekSec).padEnd(16)}\n  MONTH:    ${fmtHM(monthSec).padEnd(16)}\n`;
+    if(otSec>0)rpt+=`  OVERTIME: ${fmtHM(otSec)} [${t.otMode==='credits'?'PTO Credits':'Paid OT'}]\n`;
+    rpt+='\n';
+    if(t.wageType==='flat'){rpt+=`  Rate:     ${fmtMoney(t.hourlyWage)} flat rate per shift\n`;}
+    else{rpt+=`  Rate:     ${fmtMoney(t.hourlyWage)}/hr\n  Today's Earnings: ${fmtMoney(earnings)}\n`;}
+    if(t.ptoCredits>0||t.ptoHours>0)rpt+=`  PTO Credits: ${t.ptoCredits} (${t.ptoHours}h available)\n`;
+    const recent=(t.sessions||[]).filter(s=>s.date===getCTDateStr()).slice(-3);
+    if(recent.length>0){rpt+=`  Today's Sessions:\n`;recent.forEach(s=>{rpt+=`    ${fmtTS(s.clockIn)} → ${fmtTS(s.clockOut)}  (${fmtHM(s.seconds)})\n`;});}
+    rpt+=`\n  ${'─'.repeat(58)}\n\n`;
+  });
+  const totalWage=timers.reduce((sum,t)=>t.wageType!=='flat'?sum+calcEarnings(t,getTodaySec(t)):sum,0);
+  rpt+=`  TODAY'S TOTAL WAGE COST (hourly staff): ${fmtMoney(totalWage)}\n`;
+  rpt+=`  Total Staff Hours Today: ${fmtHM(timers.reduce((s,t)=>s+getTodaySec(t),0))}\n\n  [END OF REPORT]\n`;
+  return rpt;
+}
+
+// ==================== COMPONENTS ====================
+
+function LivePayrollDashboard({timers,tick}) {
+  const staffTimers=timers.filter(t=>!t.isOwner&&!t.isHidden);
+  const ownerTimers=timers.filter(t=>t.isOwner&&!t.isHidden);
+
+  const staffDailyHrs=staffTimers.reduce((s,t)=>s+getTodaySec(t),0);
+  const staffWeeklyHrs=staffTimers.reduce((s,t)=>s+getWeekSec(t),0);
+  const staffMonthlyHrs=staffTimers.reduce((s,t)=>s+getMonthSec(t),0);
+  const staffDailyPay=staffTimers.reduce((s,t)=>s+calcDailyEarnings(t),0);
+  const staffWeeklyPay=staffTimers.reduce((s,t)=>s+calcWeeklyEarnings(t),0);
+  const staffMonthlyPay=staffTimers.reduce((s,t)=>s+calcMonthlyEarnings(t),0);
+
+  const capPct=Math.min((staffWeeklyPay/WEEKLY_PAYROLL_CAP)*100,100);
+  const capRemaining=Math.max(0,WEEKLY_PAYROLL_CAP-staffWeeklyPay);
+  const isOver=staffWeeklyPay>=WEEKLY_PAYROLL_CAP;
+  const isWarning=!isOver&&staffWeeklyPay>=WEEKLY_PAYROLL_CAP*0.8;
+  const barColor=isOver?'#ef4444':isWarning?'#f5a623':'#1db954';
+  const weeklyValColor=isOver?'#fca5a5':isWarning?'#fde68a':'#86efac';
+
+  return(
+    <div className="payroll-dashboard">
+      <div className="prd-header">
+        <div>
+          <div className="prd-title">Live Staff Payroll Dashboard</div>
+          <div className="prd-sub">Real-Time Labor Cost — Owner Excluded</div>
+        </div>
+        <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.45)',textAlign:'right'}}>
+          <div>Updates live with clock activity</div>
+          <div style={{marginTop:3,color:'rgba(255,255,255,.6)',fontWeight:600}}>Weekly Cap: {fmtMoney(WEEKLY_PAYROLL_CAP)}</div>
+        </div>
+      </div>
+
+      {isOver&&(
+        <div className="prd-alert prd-alert-exceeded">
+          &#9888; Weekly Payroll Cap Exceeded — {fmtMoney(staffWeeklyPay)} / {fmtMoney(WEEKLY_PAYROLL_CAP)} limit
+        </div>
+      )}
+      {isWarning&&(
+        <div className="prd-alert prd-alert-warning">
+          &#9888; Approaching weekly payroll cap — {capPct.toFixed(0)}% used &middot; {fmtMoney(capRemaining)} remaining
+        </div>
+      )}
+
+      <div className="prd-cap-wrap">
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:'.7rem',color:'rgba(255,255,255,.65)',marginBottom:6}}>
+          <span style={{fontWeight:600}}>Weekly Staff Payroll</span>
+          <span style={{fontWeight:700,color:weeklyValColor}}>{fmtMoney(staffWeeklyPay)} used &nbsp;·&nbsp; {fmtMoney(capRemaining)} remaining</span>
+        </div>
+        <div className="prd-cap-track">
+          <div className="prd-cap-fill" style={{width:`${capPct}%`,background:barColor}} />
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:'.62rem',color:'rgba(255,255,255,.35)',marginTop:3}}>
+          <span>$0</span>
+          <span style={{color:'rgba(255,255,255,.4)'}}>80% warning at {fmtMoney(WEEKLY_PAYROLL_CAP*0.8)}</span>
+          <span>Cap: {fmtMoney(WEEKLY_PAYROLL_CAP)}</span>
+        </div>
+      </div>
+
+      <div className="prd-grid">
+        <div className="prd-stat-group">
+          <div className="prd-group-label">Staff Hours</div>
+          <div className="prd-stat-row">
+            <div className="prd-stat">
+              <div className="prd-stat-label">Daily</div>
+              <div className="prd-stat-val">{fmtHM(staffDailyHrs)}</div>
+            </div>
+            <div className="prd-stat">
+              <div className="prd-stat-label">Weekly</div>
+              <div className="prd-stat-val">{fmtHM(staffWeeklyHrs)}</div>
+            </div>
+            <div className="prd-stat">
+              <div className="prd-stat-label">Monthly</div>
+              <div className="prd-stat-val">{fmtHM(staffMonthlyHrs)}</div>
+            </div>
+          </div>
+        </div>
+        <div className="prd-stat-group">
+          <div className="prd-group-label">Staff Payroll</div>
+          <div className="prd-stat-row">
+            <div className="prd-stat">
+              <div className="prd-stat-label">Daily</div>
+              <div className="prd-stat-val prd-money">{fmtMoney(staffDailyPay)}</div>
+            </div>
+            <div className="prd-stat">
+              <div className="prd-stat-label">Weekly</div>
+              <div className="prd-stat-val prd-money" style={{color:weeklyValColor}}>{fmtMoney(staffWeeklyPay)}</div>
+            </div>
+            <div className="prd-stat">
+              <div className="prd-stat-label">Monthly</div>
+              <div className="prd-stat-val prd-money">{fmtMoney(staffMonthlyPay)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {ownerTimers.length>0&&(
+        <div className="prd-owner">
+          <div className="prd-owner-label">Owner Time / Owner Earnings — Not Included in Staff Payroll</div>
+          {ownerTimers.map(t=>(
+            <div key={t.id} className="prd-owner-row">
+              <span className="prd-owner-name">{t.name}</span>
+              <span>Today: {fmtHM(getTodaySec(t))} &middot; {fmtMoney(calcDailyEarnings(t))}</span>
+              <span>Week: {fmtHM(getWeekSec(t))} &middot; {fmtMoney(calcWeeklyEarnings(t))}</span>
+              <span>Month: {fmtHM(getMonthSec(t))} &middot; {fmtMoney(calcMonthlyEarnings(t))}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Toast({notify,onClear}) {
+  useEffect(()=>{if(!notify)return;const t=setTimeout(onClear,4000);return()=>clearTimeout(t);},[notify]);
+  if(!notify)return null;
+  return <div className={`toast toast-${notify.type||'info'}`} onClick={onClear}>{notify.msg}</div>;
+}
+
+function OvertimeModal({alert,timer,onChoice}) {
+  if(!alert.show||!timer)return null;
+  const todaySec=getTodaySec(timer);const otSec=getOTSec(timer);
+  return(
+    <div className="modal-overlay">
+      <div className="modal">
+        <div className="modal-header" style={{background:'linear-gradient(135deg,#b71c1c,#c62828)'}}>
+          <span className="modal-title">⚠ Overtime Alert — {timer.name}</span>
+        </div>
+        <div className="modal-body">
+          <p style={{marginBottom:16,color:'#374151',fontSize:'.88rem'}}>
+            <strong>{timer.name}</strong> has worked <strong>{fmtHM(todaySec)}</strong> today —{' '}
+            <strong style={{color:'#e53935'}}>{fmtHM(otSec)}</strong> over the 8-hour regular shift.
+          </p>
+          <div className="ot-option" onClick={()=>onChoice('credits')}>
+            <span className="ot-option-icon">🏅</span>
+            <div><div className="ot-option-title">Earn PTO Credits</div><div className="ot-option-desc">1 credit per OT hour · 30 credits = 10 PTO hours. Timer keeps running.</div></div>
+          </div>
+          <div className="ot-option" onClick={()=>onChoice('paid')}>
+            <span className="ot-option-icon">💵</span>
+            <div><div className="ot-option-title">Paid Overtime</div><div className="ot-option-desc">Record as paid overtime at regular rate. Timer keeps running.</div></div>
+          </div>
+          <div className="ot-option" onClick={()=>onChoice('stop')} style={{borderColor:'#fecaca'}}>
+            <span className="ot-option-icon">🛑</span>
+            <div><div className="ot-option-title" style={{color:'#e53935'}}>Stop Timer Now</div><div className="ot-option-desc">Clock out immediately. No overtime recorded.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PayrollModal({text,onClose}) {
+  return(
+    <div className="modal-overlay">
+      <div className="modal modal-lg">
+        <div className="modal-header"><span className="modal-title">📋 Payroll Time Report</span><button className="modal-close" onClick={onClose}>×</button></div>
+        <div className="modal-body">
+          <div style={{marginBottom:12,display:'flex',gap:8}}>
+            <button className="btn btn-navy btn-sm" onClick={()=>window.print()}>🖨 Print Report</button>
+            <button className="btn btn-gray btn-sm" onClick={()=>{const b=new Blob([text],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`payroll-${getCTDateStr()}.txt`;a.click();}}>💾 Save as Text</button>
+          </div>
+          <pre className="report-pre">{text}</pre>
+        </div>
+        <div className="modal-footer"><button className="btn btn-gray" onClick={onClose}>Close</button></div>
+      </div>
+    </div>
+  );
+}
+
+function ScheduleModal({timers,onClose}) {
+  const weekDays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  return(
+    <div className="modal-overlay">
+      <div className="modal modal-lg">
+        <div className="modal-header"><span className="modal-title">📅 Weekly Schedule</span><button className="modal-close" onClick={onClose}>×</button></div>
+        <div className="modal-body">
+          <div style={{marginBottom:12}}><button className="btn btn-navy btn-sm" onClick={()=>window.print()}>🖨 Print Schedule</button></div>
+          <table className="schedule-table">
+            <thead><tr><th>Employee</th>{weekDays.map(d=><th key={d}>{d.slice(0,3)}</th>)}</tr></thead>
+            <tbody>
+              {timers.map(t=>(
+                <tr key={t.id}>
+                  <td><div style={{fontWeight:700,color:'var(--navy)',fontSize:'.85rem'}}>{t.name}</div><div style={{fontSize:'.7rem',color:'var(--gray)'}}>{t.title}</div></td>
+                  {weekDays.map(d=>{const s=t.assignedHours&&t.assignedHours[d];return(<td key={d}>{s?(<div className="sched-day-cell"><span className="sched-hours">{s.start}</span><span className="sched-day">to</span><span className="sched-hours">{s.end}</span></div>):<span className="sched-off">Off</span>}</td>);})}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="modal-footer"><button className="btn btn-gray" onClick={onClose}>Close</button></div>
+      </div>
+    </div>
+  );
+}
+
+function ClearModal({onClear,onClose}) {
+  const [sel,setSel]=useState({todayHours:false,weekHours:false,monthHours:false,sessions:false,ptoData:false,appSessions:false,appCosts:false,auditLog:false,everything:false});
+  function toggle(k){if(k==='everything'){const next=!sel.everything;setSel(Object.fromEntries(Object.keys(sel).map(kk=>[kk,next])));}else setSel(p=>({...p,[k]:!p[k]}));}
+  const hasAny=Object.values(sel).some(Boolean);
+  const cats=[
+    {k:'todayHours',title:"Today's Hours",desc:'Reset all daily time counters to zero'},
+    {k:'weekHours',title:"This Week's Hours",desc:'Reset weekly time counters to zero'},
+    {k:'monthHours',title:"This Month's Hours",desc:'Reset monthly time counters to zero'},
+    {k:'sessions',title:'Session History',desc:'Delete all clock-in/out session records'},
+    {k:'ptoData',title:'PTO Credits & Hours',desc:'Reset PTO credits and accrued hours'},
+    {k:'appSessions',title:'App Dev Sessions',desc:'Delete all App Time Keeper sessions'},
+    {k:'appCosts',title:'App Cost Data',desc:'Reset subscription costs to defaults'},
+    {k:'auditLog',title:'⚠ Audit Log',desc:'Permanently delete all audit trail entries'},
+    {k:'everything',title:'⚠ Clear Everything',desc:'Wipe ALL stored data and reset to factory'},
+  ];
+  return(
+    <div className="modal-overlay">
+      <div className="modal">
+        <div className="modal-header" style={{background:'linear-gradient(135deg,#7f1d1d,#991b1b)'}}><span className="modal-title">🗑 Master Clear</span><button className="modal-close" onClick={onClose}>×</button></div>
+        <div className="modal-body">
+          <p style={{fontSize:'.82rem',color:'#6b7280',marginBottom:16}}>Select categories to clear. This cannot be undone.</p>
+          {cats.map(c=>(
+            <div key={c.k} className="clear-option" onClick={()=>toggle(c.k)}>
+              <input type="checkbox" checked={!!sel[c.k]} onChange={()=>{}} />
+              <div className="clear-option-label"><div className="clear-option-title">{c.title}</div><div className="clear-option-desc">{c.desc}</div></div>
+            </div>
+          ))}
+        </div>
+        <div className="modal-footer"><button className="btn btn-gray" onClick={onClose}>Cancel</button><button className="btn btn-red" disabled={!hasAny} onClick={()=>onClear(sel)}>Clear Selected</button></div>
+      </div>
+    </div>
+  );
+}
+
+// ── AUDIT LOG MODAL ──
+function ActionBadge({actionType}) {
+  const meta=ACTION_META[actionType]||ACTION_META.SYSTEM_ENTRY;
+  return <span className={`action-badge badge-${meta.badge}`}>{meta.text}</span>;
+}
+
+function AuditLogModal({auditLog,timers,filterEmpId,onClose}) {
+  const [empFilter,setEmpFilter]=useState(filterEmpId!=null?String(filterEmpId):'all');
+  const [dateFrom,setDateFrom]=useState('');
+  const [dateTo,setDateTo]=useState('');
+  const [actionFilter,setActionFilter]=useState('all');
+  const [adminOnly,setAdminOnly]=useState(false);
+
+  const filtered=useMemo(()=>{
+    return auditLog.filter(e=>{
+      if(empFilter!=='all'&&String(e.employeeId)!==empFilter)return false;
+      if(dateFrom&&e.date<dateFrom)return false;
+      if(dateTo&&e.date>dateTo)return false;
+      if(actionFilter!=='all'&&e.actionType!==actionFilter)return false;
+      if(adminOnly&&!e.isAdminEdit)return false;
+      return true;
+    }).slice().reverse();
+  },[auditLog,empFilter,dateFrom,dateTo,actionFilter,adminOnly]);
+
+  const empTitle=filterEmpId!=null?(timers.find(t=>t.id===filterEmpId)||{}).name||'Employee':'All Employees';
+
+  return(
+    <div className="modal-overlay">
+      <div className="modal modal-xl" style={{maxHeight:'92vh'}}>
+        <div className="modal-header">
+          <span className="modal-title">🔒 Audit Log — {empTitle}</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div className="audit-filter-bar">
+          <div className="audit-filter-group">
+            <span className="audit-filter-label">Employee</span>
+            <select className="audit-filter-input" value={empFilter} onChange={e=>setEmpFilter(e.target.value)}>
+              <option value="all">All Employees</option>
+              {timers.map(t=><option key={t.id} value={String(t.id)}>{t.name}</option>)}
+            </select>
+          </div>
+          <div className="audit-filter-group">
+            <span className="audit-filter-label">From Date</span>
+            <input type="date" className="audit-filter-input" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} />
+          </div>
+          <div className="audit-filter-group">
+            <span className="audit-filter-label">To Date</span>
+            <input type="date" className="audit-filter-input" value={dateTo} onChange={e=>setDateTo(e.target.value)} />
+          </div>
+          <div className="audit-filter-group">
+            <span className="audit-filter-label">Action Type</span>
+            <select className="audit-filter-input" value={actionFilter} onChange={e=>setActionFilter(e.target.value)}>
+              <option value="all">All Actions</option>
+              {Object.entries(ACTION_META).map(([k,v])=><option key={k} value={k}>{v.text}</option>)}
+            </select>
+          </div>
+          <div className="audit-filter-group" style={{justifyContent:'flex-end'}}>
+            <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',fontSize:'.78rem',color:'var(--navy)',fontWeight:600}}>
+              <input type="checkbox" checked={adminOnly} onChange={e=>setAdminOnly(e.target.checked)} style={{accentColor:'var(--gold)',width:15,height:15}} />
+              Admin Edits Only
+            </label>
+          </div>
+          <button className="btn btn-gray btn-sm" style={{alignSelf:'flex-end'}} onClick={()=>{setEmpFilter(filterEmpId!=null?String(filterEmpId):'all');setDateFrom('');setDateTo('');setActionFilter('all');setAdminOnly(false);}}>
+            Clear Filters
+          </button>
+        </div>
+
+        <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column'}}>
+          <div className="audit-count">{filtered.length} {filtered.length===1?'entry':'entries'} shown · Read-only protected log</div>
+          {filtered.length===0?(
+            <div className="audit-empty">No audit entries match the current filters.</div>
+          ):(
+            <div className="audit-table-wrap">
+              <table className="audit-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp (CT)</th>
+                    <th>Employee</th>
+                    <th>Action</th>
+                    <th>Category</th>
+                    <th>Performed By</th>
+                    <th>Original Value</th>
+                    <th>New Value</th>
+                    <th>Reason</th>
+                    <th>Pay Period</th>
+                    <th>Device</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(e=>(
+                    <tr key={e.id}>
+                      <td style={{whiteSpace:'nowrap',fontFamily:'monospace',fontSize:'.72rem'}}>{fmtTSFull(e.timestamp)}</td>
+                      <td>
+                        <div style={{fontWeight:700,color:'var(--navy)',fontSize:'.78rem'}}>{e.employeeName}</div>
+                        <div style={{fontSize:'.65rem',color:'var(--gray)'}}>ID #{e.employeeId}</div>
+                      </td>
+                      <td><ActionBadge actionType={e.actionType} /></td>
+                      <td style={{fontSize:'.72rem',color:'#374151'}}>{e.label}</td>
+                      <td style={{fontSize:'.75rem'}}>
+                        {e.performedBy}
+                        {e.isAdminEdit&&<div style={{fontSize:'.65rem',color:'#854d0e',fontWeight:700}}>ADMIN</div>}
+                      </td>
+                      <td style={{fontSize:'.72rem',color:'var(--gray)',fontStyle:e.originalValue?'normal':'italic'}}>{e.originalValue||'—'}</td>
+                      <td style={{fontSize:'.72rem',color:'var(--navy)',fontWeight:e.newValue?600:400}}>{e.newValue||'—'}</td>
+                      <td style={{fontSize:'.72rem',color:e.reason?'#b45309':'var(--gray)',fontStyle:e.reason?'normal':'italic'}}>{e.reason||'—'}</td>
+                      <td style={{fontSize:'.68rem',color:'var(--gray)',whiteSpace:'nowrap'}}>{e.payrollPeriod}</td>
+                      <td style={{fontSize:'.68rem',color:'var(--gray)'}}>{e.device}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer" style={{justifyContent:'space-between'}}>
+          <span style={{fontSize:'.72rem',color:'var(--gray)',display:'flex',alignItems:'center',gap:6}}>
+            🔒 Audit entries are permanent and cannot be modified or deleted from this interface.
+          </span>
+          <button className="btn btn-gray" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ADMIN CORRECTION MODAL ──
+function AdminCorrectionModal({timer,onSave,onClose}) {
+  const [corrType,setCorrType]=useState('today');
+  const [newHours,setNewHours]=useState('');
+  const [newMins,setNewMins]=useState('');
+  const [reason,setReason]=useState('');
+  const [performedBy,setPerformedBy]=useState('Alonzo Fuller');
+
+  if(!timer)return null;
+
+  const currentSec=corrType==='today'?getTodaySec(timer):corrType==='week'?getWeekSec(timer):getMonthSec(timer);
+  const currentLabel=fmtHM(currentSec)+` (${fmtSec(currentSec)})`;
+
+  const reasonOk=reason.trim().length>=5;
+  const valueOk=newHours!==''||(newHours===''&&newMins!=='');
+  const canSave=reasonOk&&(newHours!==''||newMins!=='');
+
+  function handleSave() {
+    const h=parseInt(newHours)||0;const m=parseInt(newMins)||0;
+    const newSec=h*3600+m*60;
+    onSave({timer,corrType,originalSec:currentSec,newSec,reason:reason.trim(),performedBy});
+  }
+
+  return(
+    <div className="modal-overlay">
+      <div className="modal" style={{maxWidth:480}}>
+        <div className="modal-header" style={{background:'linear-gradient(135deg,#78350f,#92400e)'}}>
+          <span className="modal-title">✏ Admin Correction — {timer.name}</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div style={{background:'#fef9c3',border:'1px solid #fde68a',borderRadius:'var(--radius-sm)',padding:'10px 14px',marginBottom:18,fontSize:'.78rem',color:'#92400e',fontWeight:600}}>
+            ⚠ All corrections are permanently logged in the audit trail. A reason is required.
+          </div>
+
+          <div className="correction-field">
+            <span className="correction-label">Performed By (Admin)</span>
+            <select className="correction-input" value={performedBy} onChange={e=>setPerformedBy(e.target.value)}>
+              <option value="Alonzo Fuller">Alonzo Fuller (Administrator)</option>
+              <option value="Christina Roper">Christina Roper (Office Manager)</option>
+              <option value="System">System</option>
+            </select>
+          </div>
+
+          <div className="correction-field">
+            <span className="correction-label">Correction Type</span>
+            <select className="correction-input" value={corrType} onChange={e=>setCorrType(e.target.value)}>
+              <option value="today">Today's Total Hours</option>
+              <option value="week">This Week's Total Hours</option>
+              <option value="month">This Month's Total Hours</option>
+            </select>
+            <div className="correction-current">Current value: {currentLabel}</div>
+          </div>
+
+          <div className="correction-field">
+            <span className="correction-label">New Value</span>
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <input className="correction-input" style={{width:80}} type="number" min="0" max="999" placeholder="Hrs" value={newHours} onChange={e=>setNewHours(e.target.value)} />
+              <span style={{color:'var(--gray)',fontWeight:700}}>h</span>
+              <input className="correction-input" style={{width:80}} type="number" min="0" max="59" placeholder="Min" value={newMins} onChange={e=>setNewMins(e.target.value)} />
+              <span style={{color:'var(--gray)',fontWeight:700}}>m</span>
+            </div>
+          </div>
+
+          <div className="correction-field">
+            <span className="correction-label">Reason for Correction <span style={{color:'var(--red)'}}>*</span></span>
+            <textarea
+              className="correction-reason"
+              placeholder="Describe why this correction is being made (required)…"
+              value={reason}
+              onChange={e=>setReason(e.target.value)}
+            />
+            {!reasonOk&&reason.length>0&&<div className="correction-warning">Please provide a more detailed reason (minimum 5 characters).</div>}
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-gray" onClick={onClose}>Cancel</button>
+          <button className="btn btn-yellow" disabled={!canSave} onClick={handleSave}>
+            Save Correction & Log
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PAYROLL SUB-COMPONENTS ──
+function StatusPill({status}) {
+  const map={draft:['sp-draft','Draft'],review:['sp-review','Under Review'],approved:['sp-approved','Approved'],locked:['sp-locked','Locked'],paid:['sp-paid','Paid']};
+  const [cls,label]=map[status]||['sp-draft',status];
+  return <span className={`status-pill ${cls}`}>{label}</span>;
+}
+function SummaryCard({label,value,color}) {
+  return(<div className="summary-card"><div className="summary-card-label">{label}</div><div className={`summary-card-value${color?' sc-'+color:''}`}>{value}</div></div>);
+}
+function DeductionAdjustModal({type,emp,onSave,onClose}) {
+  const [desc,setDesc]=useState('');const [amount,setAmount]=useState('');const [reason,setReason]=useState('');
+  const isAdj=type==='adjustment';
+  const canSave=desc.trim()&&amount&&parseFloat(amount)>0&&reason.trim().length>=5;
+  return(
+    <div className="modal-overlay">
+      <div className="modal" style={{maxWidth:440}}>
+        <div className="modal-header" style={{background:isAdj?'linear-gradient(135deg,#14532d,#166534)':'linear-gradient(135deg,#7f1d1d,#991b1b)'}}>
+          <span className="modal-title">{isAdj?'+ Add Adjustment':'- Add Deduction'} — {emp?emp.employeeName:''}</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div style={{background:'#fef9c3',border:'1px solid #fde68a',borderRadius:'var(--radius-sm)',padding:'8px 12px',marginBottom:16,fontSize:'.75rem',color:'#92400e',fontWeight:600}}>
+            This action will be permanently recorded in the Audit Log.
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">{isAdj?'Adjustment':'Deduction'} Description</span>
+            <input className="correction-input" placeholder="e.g. Health Insurance, Bonus…" value={desc} onChange={e=>setDesc(e.target.value)} />
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">Amount ($)</span>
+            <input className="correction-input" type="number" min="0.01" step="0.01" placeholder="0.00" value={amount} onChange={e=>setAmount(e.target.value)} />
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">Reason <span style={{color:'var(--red)'}}>*</span></span>
+            <textarea className="correction-reason" placeholder="Required: explain this deduction or adjustment…" value={reason} onChange={e=>setReason(e.target.value)} />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-gray" onClick={onClose}>Cancel</button>
+          <button className={`btn ${isAdj?'btn-green':'btn-red'}`} disabled={!canSave} onClick={()=>onSave({id:Date.now().toString(),desc:desc.trim(),amount:parseFloat(amount),reason:reason.trim()})}>Save & Log</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function ApproveConfirmModal({period,onConfirm,onClose}) {
+  const sum=payrollSummary(period);
+  return(
+    <div className="modal-overlay">
+      <div className="modal" style={{maxWidth:500}}>
+        <div className="modal-header" style={{background:'linear-gradient(135deg,#14532d,#166534)'}}>
+          <span className="modal-title">✅ Approve Payroll — Confirm</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="approve-warning">
+            ⚠ <strong>Warning:</strong> Approving payroll will <strong>lock this payroll period</strong>. After approval, normal employee and admin time edits for this period will be blocked. Any corrections will require an admin reason and will be recorded in the Audit Log.
+          </div>
+          <div style={{background:'#f8faff',border:'1px solid #e2e8f0',borderRadius:'var(--radius-sm)',padding:'14px',marginBottom:16}}>
+            <div style={{fontWeight:700,color:'var(--navy)',marginBottom:10,fontSize:'.9rem'}}>Payroll Summary</div>
+            {[['Period',`${period.periodStart} to ${period.periodEnd}`],['Total Employees',sum.empCount],['Total Regular Hours',fmtHM(sum.regularSec)],['Total OT Hours',fmtHM(sum.overtimeSec)],['Gross Payroll',fmtMoney(sum.grossPay)],['Total Deductions','-'+fmtMoney(sum.totalDeductions)],['Total Adjustments','+'+fmtMoney(sum.totalAdjustments)],['Final Payroll Owed',fmtMoney(sum.finalPay)]].map(([l,v])=>(
+              <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'4px 0',borderBottom:'1px solid #f1f5f9',fontSize:'.82rem'}}><span style={{color:'var(--gray)'}}>{l}</span><span style={{fontWeight:700,color:l==='Final Payroll Owed'?'#0d6c2f':'var(--navy)'}}>{v}</span></div>
+            ))}
+          </div>
+          <p style={{fontSize:'.78rem',color:'var(--gray)'}}>By clicking "Approve & Lock," you confirm this payroll is accurate and ready for payment.</p>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-gray" onClick={onClose}>Cancel</button>
+          <button className="btn btn-green" onClick={onConfirm}>✅ Approve &amp; Lock Payroll</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── OFFICE PAYROLL PAGE ──
+function PayrollPage({timers,auditLog,onAddAudit,payrollPeriods,onSavePeriod,onClose,onOpenAudit}) {
+  const todayStr=getCTDateStr();
+  const firstOfMonth=todayStr.slice(0,8)+'01';
+  const [tab,setTab]=useState('current');
+  const [periodStart,setPeriodStart]=useState(firstOfMonth);
+  const [periodEnd,setPeriodEnd]=useState(todayStr);
+  const [activePeriod,setActivePeriod]=useState(()=>payrollPeriods.find(p=>p.status==='draft')||null);
+  const [expandedEmpId,setExpandedEmpId]=useState(null);
+  const [deductModal,setDeductModal]=useState(null);
+  const [showApprove,setShowApprove]=useState(false);
+  const [histEmpId,setHistEmpId]=useState('all');
+
+  const isLocked=activePeriod&&(activePeriod.status==='locked'||activePeriod.status==='paid'||activePeriod.status==='approved');
+
+  function updatePeriod(updated) {
+    setActivePeriod(updated);
+    onSavePeriod(updated);
+  }
+
+  function generatePayroll() {
+    if(!periodStart||!periodEnd)return;
+    const period=mkPayrollPeriod(timers,periodStart,periodEnd);
+    updatePeriod(period);
+    onAddAudit(mkAuditEntry({empId:-1,empName:'All Employees',actionType:'SYSTEM_ENTRY',
+      newValue:`Payroll generated ${periodStart} → ${periodEnd}`,performedBy:'Administrator',isAdminEdit:true}));
+  }
+
+  function handleDeductSave(empId,type,item) {
+    if(!activePeriod)return;
+    const emp=activePeriod.employees.find(e=>e.employeeId===empId);if(!emp)return;
+    const key=type==='deduction'?'deductions':'adjustments';
+    const totKey=type==='deduction'?'totalDeductions':'totalAdjustments';
+    const newList=[...emp[key],item];
+    const newTot=newList.reduce((s,d)=>s+d.amount,0);
+    const updated={...activePeriod,employees:activePeriod.employees.map(e=>{
+      if(e.employeeId!==empId)return e;
+      const ne={...e,[key]:newList,[totKey]:newTot};
+      ne.finalPay=recalcEmpFinalPay(ne);return ne;
+    })};
+    updatePeriod(updated);
+    onAddAudit(mkAuditEntry({empId,empName:emp.employeeName,actionType:'ADMIN_CORRECTION',
+      newValue:`${type==='deduction'?'Deduction':'Adjustment'}: ${item.desc} = ${fmtMoney(item.amount)}`,
+      performedBy:'Administrator',isAdminEdit:true,reason:item.reason}));
+    setDeductModal(null);
+  }
+
+  function removeDeductAdj(empId,type,itemId) {
+    if(!activePeriod||isLocked)return;
+    const emp=activePeriod.employees.find(e=>e.employeeId===empId);if(!emp)return;
+    const key=type==='deduction'?'deductions':'adjustments';
+    const totKey=type==='deduction'?'totalDeductions':'totalAdjustments';
+    const item=emp[key].find(x=>x.id===itemId);
+    const newList=emp[key].filter(x=>x.id!==itemId);
+    const newTot=newList.reduce((s,d)=>s+d.amount,0);
+    const updated={...activePeriod,employees:activePeriod.employees.map(e=>{
+      if(e.employeeId!==empId)return e;
+      const ne={...e,[key]:newList,[totKey]:newTot};ne.finalPay=recalcEmpFinalPay(ne);return ne;
+    })};
+    updatePeriod(updated);
+    onAddAudit(mkAuditEntry({empId,empName:emp.employeeName,actionType:'ADMIN_CORRECTION',
+      originalValue:`${type==='deduction'?'Deduction':'Adjustment'} removed: ${item?item.desc:itemId}`,
+      performedBy:'Administrator',isAdminEdit:true,reason:'Item removed by admin'}));
+  }
+
+  function advanceStatus(newStatus) {
+    if(!activePeriod)return;
+    const now=Date.now();
+    const updated={...activePeriod,status:newStatus,
+      ...(newStatus==='approved'?{approvedAt:now,approvedBy:'Alonzo Fuller'}:{}),
+      ...(newStatus==='locked'?{lockedAt:now}:{}),
+      ...(newStatus==='paid'?{paidAt:now}:{}),
+    };
+    updatePeriod(updated);
+    const actionMap={review:'Submitted for Review',approved:'Payroll Approved',locked:'Payroll Period Locked',paid:'Payroll Marked as Paid'};
+    onAddAudit(mkAuditEntry({empId:-1,empName:'All Employees',actionType:'PAYROLL_LOCKED',
+      newValue:`${actionMap[newStatus]||newStatus} — ${activePeriod.periodStart} to ${activePeriod.periodEnd}`,
+      performedBy:'Alonzo Fuller',isAdminEdit:true}));
+    setShowApprove(false);
+  }
+
+  function loadHistoryPeriod(p) {
+    setActivePeriod(p);setPeriodStart(p.periodStart);setPeriodEnd(p.periodEnd);setTab('current');
+  }
+
+  const sum=payrollSummary(activePeriod);
+  const periodAudit=activePeriod?auditLog.filter(e=>e.payrollPeriod===activePeriod.periodStart||e.date>=activePeriod.periodStart&&e.date<=activePeriod.periodEnd):[];
+
+  return(
+    <div className="payroll-page-wrap">
+      {/* Page Header */}
+      <div className="payroll-page-header">
+        <button className="btn btn-outline btn-sm" onClick={onClose}>← Back to Clock</button>
+        <div style={{textAlign:'center'}}>
+          <div style={{fontSize:'1.1rem',fontWeight:700,letterSpacing:'.5px'}}>Office Payroll</div>
+          <div style={{fontSize:'.68rem',color:'var(--gold2)',letterSpacing:'1.5px',textTransform:'uppercase',marginTop:2}}>iTeam Legal Solutions</div>
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          <button className="btn btn-outline btn-sm" onClick={onOpenAudit}>🔒 Audit Log</button>
+          {activePeriod&&<button className="btn btn-outline btn-sm" onClick={()=>exportPayrollCSV(activePeriod)}>📊 CSV</button>}
+          {activePeriod&&<button className="btn btn-outline btn-sm" onClick={()=>window.print()}>🖨 Print</button>}
+        </div>
+      </div>
+
+      <div className="payroll-page-main">
+        {/* Tab bar */}
+        <div className="pr-tab-bar">
+          <button className={`pr-tab${tab==='current'?' active':''}`} onClick={()=>setTab('current')}>Current Payroll</button>
+          <button className={`pr-tab${tab==='history'?' active':''}`} onClick={()=>setTab('history')}>Payroll History</button>
+          <button className={`pr-tab${tab==='audit'?' active':''}`} onClick={()=>setTab('audit')}>Payroll Audit Trail</button>
+        </div>
+
+        {/* ── CURRENT PAYROLL TAB ── */}
+        {tab==='current'&&(
+          <>
+            {/* Period Selector */}
+            <div className="period-selector">
+              <div><span className="period-label">Pay Period Start</span><input type="date" className="period-input" value={periodStart} onChange={e=>setPeriodStart(e.target.value)} disabled={!!isLocked} /></div>
+              <div><span className="period-label">Pay Period End</span><input type="date" className="period-input" value={periodEnd} onChange={e=>setPeriodEnd(e.target.value)} disabled={!!isLocked} /></div>
+              <button className="btn btn-navy" onClick={generatePayroll} disabled={!periodStart||!periodEnd||!!isLocked}>⚡ Generate Payroll</button>
+              {activePeriod&&<div style={{marginLeft:8}}><StatusPill status={activePeriod.status} /></div>}
+              {activePeriod&&activePeriod.approvedAt&&<div style={{fontSize:'.72rem',color:'var(--gray)'}}>Approved {fmtTS(activePeriod.approvedAt)} by {activePeriod.approvedBy}</div>}
+              {activePeriod&&activePeriod.paidAt&&<div style={{fontSize:'.72rem',color:'#075985',fontWeight:700}}>Paid {fmtTS(activePeriod.paidAt)}</div>}
+            </div>
+
+            {activePeriod&&(
+              <>
+                {/* Summary Cards */}
+                <div className="summary-grid">
+                  <SummaryCard label="Employees" value={sum.empCount} />
+                  <SummaryCard label="Regular Hours" value={fmtHM(sum.regularSec)} />
+                  <SummaryCard label="Overtime Hours" value={fmtHM(sum.overtimeSec)} color="red" />
+                  <SummaryCard label="Break Time" value={fmtHM(sum.breakSec)} />
+                  <SummaryCard label="Gross Payroll" value={fmtMoney(sum.grossPay)} color="gold" />
+                  <SummaryCard label="Deductions" value={fmtMoney(sum.totalDeductions)} color="red" />
+                  <SummaryCard label="Adjustments" value={fmtMoney(sum.totalAdjustments)} color="green" />
+                  <SummaryCard label="Final Payroll Owed" value={fmtMoney(sum.finalPay)} color="green" />
+                </div>
+
+                {/* Employee Payroll Table */}
+                <div className="pr-table-wrap">
+                  <table className="pr-table">
+                    <thead>
+                      <tr>
+                        <th>Employee</th><th>Pay Type</th><th>Rate</th>
+                        <th>Regular Hrs</th><th>Break Time</th><th>OT Hrs</th>
+                        <th>Gross Pay</th><th>Deductions</th><th>Adjustments</th><th>Final Pay</th>
+                        {!isLocked&&<th>Actions</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activePeriod.employees.map(e=>{
+                        const isExp=expandedEmpId===e.employeeId;
+                        return(
+                          <React.Fragment key={e.employeeId}>
+                            <tr className={`pr-emp-row${isExp?' expanded':''}`} onClick={()=>setExpandedEmpId(isExp?null:e.employeeId)}>
+                              <td><div style={{fontWeight:700,color:'var(--navy)',fontSize:'.82rem'}}>{e.employeeName}</div><div style={{fontSize:'.68rem',color:'var(--gray)'}}>{e.title}</div></td>
+                              <td style={{fontSize:'.75rem'}}>{e.wageType==='flat'?'Flat Rate':e.isExempt?'Exempt':'Hourly'}</td>
+                              <td style={{fontSize:'.75rem'}}>{e.wageType==='flat'?fmtMoney(e.hourlyWage)+'/period':fmtMoney(e.hourlyWage)+'/hr'}</td>
+                              <td>{fmtHM(e.regularSec)}</td>
+                              <td style={{color:'var(--gray)',fontSize:'.75rem'}}>{fmtHM(e.breakSec)}</td>
+                              <td style={{color:e.overtimeSec>0?'var(--red)':'#d1d5db',fontWeight:e.overtimeSec>0?700:400}}>{fmtHM(e.overtimeSec)}</td>
+                              <td style={{fontWeight:600}}>{fmtMoney(e.grossPay)}</td>
+                              <td style={{color:e.totalDeductions>0?'var(--red)':'#d1d5db'}}>{e.totalDeductions>0?'-'+fmtMoney(e.totalDeductions):'—'}</td>
+                              <td style={{color:e.totalAdjustments>0?'#0d6c2f':'#d1d5db'}}>{e.totalAdjustments>0?'+'+fmtMoney(e.totalAdjustments):'—'}</td>
+                              <td style={{fontWeight:700,color:'#0d6c2f'}}>{fmtMoney(e.finalPay)}</td>
+                              {!isLocked&&<td onClick={ev=>ev.stopPropagation()}>
+                                <div style={{display:'flex',gap:4}}>
+                                  <button className="btn btn-red btn-xs" onClick={()=>setDeductModal({empId:e.employeeId,type:'deduction'})}>− Deduct</button>
+                                  <button className="btn btn-green btn-xs" onClick={()=>setDeductModal({empId:e.employeeId,type:'adjustment'})}>+ Adjust</button>
+                                </div>
+                              </td>}
+                            </tr>
+                            {isExp&&(
+                              <tr className="pr-expand-row">
+                                <td colSpan={isLocked?10:11}>
+                                  <div className="pr-expand-inner">
+                                    <div className="pr-expand-section">
+                                      <div className="pr-expand-title">Time Breakdown ({e.sessionCount} session{e.sessionCount!==1?'s':''})</div>
+                                      {[['Regular Hours',fmtHM(e.regularSec)],['Overtime Hours',fmtHM(e.overtimeSec)],['Break Time',fmtHM(e.breakSec)],['Total Logged',(()=>{const sec=(e.regularSec||0)+(e.overtimeSec||0);return fmtHM(sec);})()]].map(([l,v])=>(
+                                        <div key={l} className="pr-expand-row2"><span style={{color:'var(--gray)'}}>{l}</span><span style={{fontWeight:600}}>{v}</span></div>
+                                      ))}
+                                      <div style={{marginTop:10}}>
+                                        <div className="pr-expand-title">Pay Calculation</div>
+                                        {e.wageType==='flat'?<div className="pr-expand-row2"><span>Flat rate</span><span style={{fontWeight:700}}>{fmtMoney(e.grossPay)}</span></div>:(
+                                          <>
+                                            <div className="pr-expand-row2"><span>Regular ({fmtHM(e.regularSec)} × {fmtMoney(e.hourlyWage)}/hr)</span><span>{fmtMoney((e.regularSec/3600)*e.hourlyWage)}</span></div>
+                                            {e.overtimeSec>0&&<div className="pr-expand-row2"><span>OT ({fmtHM(e.overtimeSec)} × {fmtMoney(e.hourlyWage*1.5)}/hr)</span><span style={{color:'var(--red)'}}>{fmtMoney((e.overtimeSec/3600)*e.hourlyWage*1.5)}</span></div>}
+                                            <div className="pr-expand-row2" style={{borderTop:'2px solid #e2e8f0',marginTop:4,paddingTop:4}}><span style={{fontWeight:700}}>Gross Pay</span><span style={{fontWeight:700}}>{fmtMoney(e.grossPay)}</span></div>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="pr-expand-section">
+                                      <div className="pr-expand-title">Deductions {!isLocked&&<button className="btn btn-red btn-xs" style={{marginLeft:6}} onClick={()=>setDeductModal({empId:e.employeeId,type:'deduction'})}>+ Add</button>}</div>
+                                      {e.deductions.length===0?<div style={{color:'var(--gray)',fontStyle:'italic',fontSize:'.75rem'}}>None</div>:e.deductions.map(d=>(
+                                        <div key={d.id} className="deduct-item"><div><span style={{fontWeight:600}}>{d.desc}</span><div style={{fontSize:'.68rem',color:'var(--gray)'}}>{d.reason}</div></div><div style={{display:'flex',alignItems:'center',gap:6}}><span style={{color:'var(--red)',fontWeight:700}}>-{fmtMoney(d.amount)}</span>{!isLocked&&<button onClick={()=>removeDeductAdj(e.employeeId,'deduction',d.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#9ca3af',fontSize:'.7rem'}}>✕</button>}</div></div>
+                                      ))}
+                                      <div style={{height:12}}/>
+                                      <div className="pr-expand-title">Adjustments {!isLocked&&<button className="btn btn-green btn-xs" style={{marginLeft:6}} onClick={()=>setDeductModal({empId:e.employeeId,type:'adjustment'})}>+ Add</button>}</div>
+                                      {e.adjustments.length===0?<div style={{color:'var(--gray)',fontStyle:'italic',fontSize:'.75rem'}}>None</div>:e.adjustments.map(a=>(
+                                        <div key={a.id} className="deduct-item"><div><span style={{fontWeight:600}}>{a.desc}</span><div style={{fontSize:'.68rem',color:'var(--gray)'}}>{a.reason}</div></div><div style={{display:'flex',alignItems:'center',gap:6}}><span style={{color:'#0d6c2f',fontWeight:700}}>+{fmtMoney(a.amount)}</span>{!isLocked&&<button onClick={()=>removeDeductAdj(e.employeeId,'adjustment',a.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#9ca3af',fontSize:'.7rem'}}>✕</button>}</div></div>
+                                      ))}
+                                      <div style={{height:12}}/>
+                                      <div className="pr-expand-row2" style={{borderTop:'2px solid var(--navy)',paddingTop:6}}><span style={{fontWeight:700,color:'var(--navy)'}}>Final Pay</span><span style={{fontWeight:700,color:'#0d6c2f',fontSize:'1rem'}}>{fmtMoney(e.finalPay)}</span></div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                      {/* Totals row */}
+                      <tr style={{background:'var(--navy)'}}>
+                        <td colSpan={3} style={{color:'#fff',fontWeight:700,fontSize:'.8rem',padding:'10px 11px'}}>TOTALS</td>
+                        <td style={{color:'var(--gold2)',fontWeight:700}}>{fmtHM(sum.regularSec)}</td>
+                        <td style={{color:'rgba(255,255,255,.6)'}}>{fmtHM(sum.breakSec)}</td>
+                        <td style={{color:'#fca5a5',fontWeight:700}}>{fmtHM(sum.overtimeSec)}</td>
+                        <td style={{color:'#fff',fontWeight:700}}>{fmtMoney(sum.grossPay)}</td>
+                        <td style={{color:'#fca5a5',fontWeight:700}}>{sum.totalDeductions>0?'-'+fmtMoney(sum.totalDeductions):'—'}</td>
+                        <td style={{color:'#86efac',fontWeight:700}}>{sum.totalAdjustments>0?'+'+fmtMoney(sum.totalAdjustments):'—'}</td>
+                        <td style={{color:'#86efac',fontWeight:700,fontSize:'.9rem'}}>{fmtMoney(sum.finalPay)}</td>
+                        {!isLocked&&<td></td>}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Action Bar */}
+                <div className="pr-action-bar">
+                  <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+                    {activePeriod.status==='draft'&&<button className="btn btn-navy" onClick={()=>advanceStatus('review')}>📋 Submit for Review</button>}
+                    {activePeriod.status==='review'&&<button className="btn btn-green" onClick={()=>setShowApprove(true)}>✅ Approve Payroll</button>}
+                    {activePeriod.status==='approved'&&<button className="btn btn-purple" onClick={()=>advanceStatus('locked')}>🔒 Lock Payroll</button>}
+                    {activePeriod.status==='locked'&&<button className="btn btn-navy" onClick={()=>advanceStatus('paid')}>💳 Mark as Paid</button>}
+                    {activePeriod.status==='paid'&&<span style={{color:'#075985',fontWeight:700,fontSize:'.85rem'}}>✓ Payroll Complete — Paid {fmtTS(activePeriod.paidAt)}</span>}
+                    <button className="btn btn-gray btn-sm" onClick={onOpenAudit}>🔒 View Audit Log</button>
+                  </div>
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                    <button className="btn btn-gray btn-sm" onClick={()=>window.print()}>🖨 Print Payroll</button>
+                    <button className="btn btn-gray btn-sm" onClick={()=>exportPayrollCSV(activePeriod)}>📊 Download CSV</button>
+                    {!isLocked&&<button className="btn btn-gold btn-sm" onClick={()=>onSavePeriod(activePeriod)}>💾 Save Draft</button>}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {!activePeriod&&(
+              <div style={{background:'#fff',borderRadius:'var(--radius)',boxShadow:'var(--shadow)',padding:'40px',textAlign:'center',color:'var(--gray)'}}>
+                <div style={{fontSize:'2rem',marginBottom:12}}>📊</div>
+                <div style={{fontWeight:700,color:'var(--navy)',fontSize:'1rem',marginBottom:8}}>No payroll generated yet</div>
+                <div style={{fontSize:'.82rem'}}>Select a pay period above and click <strong>Generate Payroll</strong> to calculate employee wages.</div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ── HISTORY TAB ── */}
+        {tab==='history'&&(
+          <div style={{background:'#fff',borderRadius:'var(--radius)',boxShadow:'var(--shadow)',overflow:'hidden'}}>
+            <div style={{background:'var(--navy)',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{color:'#fff',fontWeight:700,fontSize:'.9rem'}}>Payroll History</span>
+              <span style={{color:'rgba(255,255,255,.6)',fontSize:'.75rem'}}>{payrollPeriods.length} period{payrollPeriods.length!==1?'s':''}</span>
+            </div>
+            {payrollPeriods.length===0?(
+              <div style={{padding:40,textAlign:'center',color:'var(--gray)',fontStyle:'italic'}}>No payroll history yet.</div>
+            ):(
+              <table className="history-table">
+                <thead><tr><th>Period</th><th>Employees</th><th>Regular Hrs</th><th>OT Hrs</th><th>Gross Pay</th><th>Deductions</th><th>Final Pay</th><th>Status</th><th>Generated</th></tr></thead>
+                <tbody>
+                  {payrollPeriods.slice().reverse().map(p=>{const s=payrollSummary(p);return(
+                    <tr key={p.id} onClick={()=>loadHistoryPeriod(p)}>
+                      <td><strong style={{color:'var(--navy)'}}>{p.periodStart}</strong><span style={{color:'var(--gray)'}}> → {p.periodEnd}</span></td>
+                      <td>{s.empCount}</td>
+                      <td>{fmtHM(s.regularSec)}</td>
+                      <td style={{color:s.overtimeSec>0?'var(--red)':undefined}}>{fmtHM(s.overtimeSec)}</td>
+                      <td style={{fontWeight:600}}>{fmtMoney(s.grossPay)}</td>
+                      <td style={{color:'var(--red)'}}>{s.totalDeductions>0?'-'+fmtMoney(s.totalDeductions):'—'}</td>
+                      <td style={{fontWeight:700,color:'#0d6c2f'}}>{fmtMoney(s.finalPay)}</td>
+                      <td><StatusPill status={p.status} /></td>
+                      <td style={{fontSize:'.72rem',color:'var(--gray)'}}>{fmtTS(p.generatedAt)}</td>
+                    </tr>
+                  );})}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* ── PAYROLL AUDIT TRAIL TAB ── */}
+        {tab==='audit'&&(
+          <div style={{background:'#fff',borderRadius:'var(--radius)',boxShadow:'var(--shadow)',overflow:'hidden'}}>
+            <div style={{background:'var(--navy)',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{color:'#fff',fontWeight:700,fontSize:'.9rem'}}>Payroll Audit Trail</span>
+              <span style={{color:'rgba(255,255,255,.6)',fontSize:'.75rem'}}>{auditLog.filter(e=>['PAYROLL_LOCKED','ADMIN_CORRECTION'].includes(e.actionType)).length} entries</span>
+            </div>
+            <div style={{overflowX:'auto',padding:'0 20px 20px'}}>
+              <table className="audit-table" style={{marginTop:12}}>
+                <thead><tr><th>Timestamp</th><th>Employee</th><th>Action</th><th>Category</th><th>Performed By</th><th>Change</th><th>Reason</th><th>Period</th></tr></thead>
+                <tbody>
+                  {auditLog.filter(e=>['PAYROLL_LOCKED','ADMIN_CORRECTION','SYSTEM_ENTRY'].includes(e.actionType)).slice().reverse().map(e=>(
+                    <tr key={e.id}>
+                      <td style={{fontFamily:'monospace',fontSize:'.72rem',whiteSpace:'nowrap'}}>{fmtTSFull(e.timestamp)}</td>
+                      <td style={{fontWeight:700,color:'var(--navy)',fontSize:'.78rem'}}>{e.employeeName}</td>
+                      <td><ActionBadge actionType={e.actionType} /></td>
+                      <td style={{fontSize:'.72rem'}}>{e.label}</td>
+                      <td style={{fontSize:'.75rem'}}>{e.performedBy}{e.isAdminEdit&&<div style={{fontSize:'.65rem',color:'#854d0e',fontWeight:700}}>ADMIN</div>}</td>
+                      <td style={{fontSize:'.72rem',color:'var(--navy)'}}>{e.newValue||'—'}</td>
+                      <td style={{fontSize:'.72rem',color:e.reason?'#b45309':'var(--gray)',fontStyle:e.reason?'normal':'italic'}}>{e.reason||'—'}</td>
+                      <td style={{fontSize:'.68rem',color:'var(--gray)'}}>{e.payrollPeriod}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Payroll Modals */}
+      {deductModal&&(()=>{const emp=activePeriod.employees.find(e=>e.employeeId===deductModal.empId);return emp&&<DeductionAdjustModal type={deductModal.type} emp={emp} onSave={item=>handleDeductSave(deductModal.empId,deductModal.type,item)} onClose={()=>setDeductModal(null)} />;})()}
+      {showApprove&&activePeriod&&<ApproveConfirmModal period={activePeriod} onConfirm={()=>advanceStatus('approved')} onClose={()=>setShowApprove(false)} />}
+    </div>
+  );
+}
+
+function AddEmployeeModal({onSave,onClose}) {
+  const [name,setName]=useState('');
+  const [title,setTitle]=useState('');
+  const [payType,setPayType]=useState('hourly');
+  const [rate,setRate]=useState('');
+  const [hireDate,setHireDate]=useState('');
+  const [isOwner,setIsOwner]=useState(false);
+  const canSave=name.trim().length>=2&&rate!==''&&parseFloat(rate)>=0;
+  return(
+    <div className="modal-overlay">
+      <div className="modal" style={{maxWidth:480}}>
+        <div className="modal-header">
+          <span className="modal-title">+ Add Employee</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="correction-field">
+            <span className="correction-label">Employee Name <span style={{color:'var(--red)'}}>*</span></span>
+            <input className="correction-input" placeholder="Full name" value={name} onChange={e=>setName(e.target.value)} autoFocus />
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">Role / Title</span>
+            <input className="correction-input" placeholder="e.g. Legal Assistant, Intern…" value={title} onChange={e=>setTitle(e.target.value)} />
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">Pay Type</span>
+            <select className="correction-input" value={payType} onChange={e=>setPayType(e.target.value)}>
+              <option value="hourly">Hourly Rate</option>
+              <option value="flat">Flat Shift Rate</option>
+            </select>
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">{payType==='flat'?'Flat Rate per Shift ($)':'Hourly Rate ($/hr)'} <span style={{color:'var(--red)'}}>*</span></span>
+            <input className="correction-input" type="number" min="0" step="0.01" placeholder="0.00" value={rate} onChange={e=>setRate(e.target.value)} />
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">Hire Date</span>
+            <input className="correction-input" type="date" value={hireDate} onChange={e=>setHireDate(e.target.value)} />
+          </div>
+          <div className="correction-field">
+            <span className="correction-label">Staff Type</span>
+            <div style={{display:'flex',gap:20,marginTop:6}}>
+              <label style={{display:'flex',alignItems:'center',gap:7,cursor:'pointer',fontWeight:600,fontSize:'.85rem',color:!isOwner?'var(--navy)':'var(--gray)'}}>
+                <input type="radio" name="addEmpType" checked={!isOwner} onChange={()=>setIsOwner(false)} style={{accentColor:'var(--navy)',width:15,height:15}} />
+                Staff (included in payroll)
+              </label>
+              <label style={{display:'flex',alignItems:'center',gap:7,cursor:'pointer',fontWeight:600,fontSize:'.85rem',color:isOwner?'#7c3aed':'var(--gray)'}}>
+                <input type="radio" name="addEmpType" checked={isOwner} onChange={()=>setIsOwner(true)} style={{accentColor:'#7c3aed',width:15,height:15}} />
+                Owner (separate tracking)
+              </label>
+            </div>
+            {!isOwner&&<div style={{fontSize:'.72rem',color:'var(--gray)',marginTop:5}}>This employee's hours will count toward Staff Payroll totals and the weekly cap.</div>}
+            {isOwner&&<div style={{fontSize:'.72rem',color:'#7c3aed',marginTop:5}}>Owner hours are shown separately and excluded from Staff Payroll cap calculations.</div>}
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-gray" onClick={onClose}>Cancel</button>
+          <button className="btn btn-navy" disabled={!canSave} onClick={()=>onSave({name:name.trim(),title:title.trim(),payType,rate:parseFloat(rate)||0,hireDate,isOwner})}>
+            Save Employee
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddEmployeeCard({onClick}) {
+  return(
+    <div className="add-emp-card" onClick={onClick}>
+      <div className="add-emp-icon">+</div>
+      <div className="add-emp-text">Add Employee</div>
+      <div className="add-emp-sub">Click to add a new team member to the dashboard</div>
+    </div>
+  );
+}
+
+function InactiveStaffSection({timers,onReactivate}) {
+  const [expanded,setExpanded]=useState(false);
+  if(!timers||timers.length===0)return null;
+  return(
+    <div style={{marginBottom:24}}>
+      <div className="inactive-section-header" onClick={()=>setExpanded(!expanded)}>
+        <div className="section-title" style={{marginBottom:0}}>Inactive Staff ({timers.length})</div>
+        <span style={{fontSize:'.78rem',color:'var(--gray)',fontWeight:600,marginLeft:8}}>{expanded?'▲ Hide':'▼ Show'}</span>
+      </div>
+      {expanded&&(
+        <div style={{background:'#fff',borderRadius:'var(--radius)',boxShadow:'var(--shadow)',overflow:'hidden',marginTop:10}}>
+          {timers.map(t=>(
+            <div key={t.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 18px',borderBottom:'1px solid #f1f5f9'}}>
+              <div>
+                <div style={{fontWeight:700,color:'var(--navy)',fontSize:'.88rem'}}>{t.name}</div>
+                <div style={{fontSize:'.72rem',color:'var(--gray)'}}>
+                  {t.title||'No title'} &nbsp;·&nbsp;
+                  {t.wageType==='flat'?fmtMoney(t.hourlyWage)+'/shift':fmtMoney(t.hourlyWage)+'/hr'} &nbsp;·&nbsp;
+                  {t.isOwner?'Owner':'Staff'}
+                </div>
+              </div>
+              <button className="btn btn-green btn-sm" onClick={()=>onReactivate(t.id)}>Reactivate</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EmployeeCard({timer,onClockIn,onPause,onResume,onClockOut,onEditName,onViewLog,onCorrect,onDeactivate,onEditEmployee,tick}) {
+  const [editingName,setEditingName]=useState(false);
+  const [nameInput,setNameInput]=useState(timer.name);
+  const todaySec=getTodaySec(timer);const weekSec=getWeekSec(timer);const monthSec=getMonthSec(timer);
+  const otSec=getOTSec(timer);const earnings=calcEarnings(timer,todaySec);const elapsedSec=getElapsedSec(timer);
+  const stripeClass=timer.isRunning?'running':timer.isPaused?'paused':'stopped';
+  const timerClass=timer.isRunning?'running':timer.isPaused?'paused':'';
+  const badgeClass=timer.isRunning?'badge-running':timer.isPaused?'badge-paused':'badge-stopped';
+  const badgeText=timer.isRunning?'● Active':timer.isPaused?'◐ Break':'○ Out';
+  const initials=timer.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  return (
+    <div className="emp-card">
+      <div className={`card-stripe ${stripeClass}`} />
+      <div className="card-header">
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          {/* Small Avatar */}
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: timer.profileImage ? 'transparent' : 'linear-gradient(135deg,var(--navy),var(--navy2))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '.85rem',
+              color: '#fff',
+              fontWeight: 700,
+              flexShrink: 0,
+              overflow: 'hidden',
+              cursor: 'pointer',
+            }}
+            onClick={() => onEditEmployee && onEditEmployee(timer.id)}
+          >
+            {timer.profileImage ? (
+              <img src={timer.profileImage} alt={timer.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              initials
+            )}
+          </div>
+          <div>
+            {timer.isNameEditable && editingName ? (
+              <div>
+                <input
+                  className="name-edit-input"
+                  value={nameInput}
+                  onChange={e => setNameInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      onEditName(timer.id, nameInput.trim() || timer.name);
+                      setEditingName(false);
+                    }
+                    if (e.key === 'Escape') {
+                      setEditingName(false);
+                      setNameInput(timer.name);
+                    }
+                  }}
+                  autoFocus
+                />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button className="btn btn-green btn-sm" onClick={() => { onEditName(timer.id, nameInput.trim() || timer.name); setEditingName(false); }}>Save</button>
+                  <button className="btn btn-gray btn-sm" onClick={() => { setEditingName(false); setNameInput(timer.name); }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div
+                  className="card-name card-name-clickable"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={() => onEditEmployee && onEditEmployee(timer.id)}
+                  title="Click to edit employee details"
+                >
+                  {timer.name}
+                  {timer.isNameEditable && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setEditingName(true); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '.75rem', color: 'var(--gray)' }}
+                    >
+                      ✏️
+                    </button>
+                  )}
+                </div>
+                <div className="card-title">{timer.title}</div>
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <span className={`card-badge ${badgeClass}`}>{badgeText}</span>
+          {timer.isExempt && <span className="card-badge badge-exempt">Exempt</span>}
+        </div>
+      </div>
+
+      <div className="card-timer">
+        <div className={`timer-display ${timerClass}`}>{fmtSec(elapsedSec)}</div>
+        <div className="timer-clock-time">
+          {timer.isRunning && timer.clockInTime && `In since ${fmtTimeOnly(timer.clockInTime)}`}
+          {timer.isPaused && timer.pauseStartTime && `Paused at ${fmtTimeOnly(timer.pauseStartTime)}`}
+          {!timer.isRunning && !timer.isPaused && (() => {
+            const last = (timer.sessions || []).slice(-1)[0];
+            return last ? `Last out: ${fmtTS(last.clockOut)}` : 'Not clocked in';
+          })()}
+        </div>
+      </div>
+
+      <div className="card-stats">
+        <div className="stat-item"><div className="stat-label">Today</div><div className="stat-value">{fmtHM(todaySec)}</div></div>
+        <div className="stat-item"><div className="stat-label">Week</div><div className="stat-value">{fmtHM(weekSec)}</div></div>
+        <div className="stat-item"><div className="stat-label">Month</div><div className="stat-value">{fmtHM(monthSec)}</div></div>
+      </div>
+
+      {otSec > 0 && (
+        <div style={{ padding: '6px 16px', background: '#fff5f5', borderBottom: '1px solid #fee2e2', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '.7rem', color: '#991b1b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px' }}>⚠ Overtime</span>
+          <span style={{ fontSize: '.82rem', color: '#e53935', fontWeight: 700 }}>{fmtHM(otSec)}</span>
+        </div>
+      )}
+
+      <div className="card-earnings">
+        <div>
+          <div className="earnings-label">{timer.wageType === 'flat' ? 'Flat Rate' : `Earnings (${fmtMoney(timer.hourlyWage)}/hr)`}</div>
+          <div className="earnings-value">{timer.wageType === 'flat' ? fmtMoney(timer.hourlyWage) + '/shift' : fmtMoney(earnings)}</div>
+        </div>
+        {(timer.ptoCredits > 0 || timer.ptoHours > 0) && (
+          <div className="pto-info" style={{ textAlign: 'right' }}>
+            <div>{timer.ptoCredits} credits</div>
+            <div>{timer.ptoHours}h PTO</div>
+          </div>
+        )}
+      </div>
+
+      <div className="card-actions">
+        {!timer.isRunning && !timer.isPaused && (
+          <button className="btn btn-green" style={{ flex: 1 }} onClick={() => onClockIn(timer.id)}>
+            ⏱ Clock In
+          </button>
+        )}
+        {timer.isRunning && (
+          <>
+            <button className="btn btn-yellow" style={{ flex: 1 }} onClick={() => onPause(timer.id)}>
+              ⏸ Break
+            </button>
+            <button className="btn btn-red" style={{ flex: 1 }} onClick={() => onClockOut(timer.id)}>
+              ⏹ Clock Out
+            </button>
+          </>
+        )}
+        {timer.isPaused && (
+          <>
+            <button className="btn btn-green" style={{ flex: 1 }} onClick={() => onResume(timer.id)}>
+              ▶ Resume
+            </button>
+            <button className="btn btn-red" style={{ flex: 1 }} onClick={() => onClockOut(timer.id)}>
+              ⏹ Clock Out
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="card-audit-row">
+        <button className="btn btn-purple btn-xs" style={{ flex: 1 }} onClick={() => onViewLog(timer.id)}>
+          🔒 View Time Log
+        </button>
+        <button className="btn btn-gray btn-xs" style={{ flex: 1 }} onClick={() => onCorrect(timer.id)}>
+          ✏ Admin Correct
+        </button>
+        {onDeactivate && (
+          <button
+            className="btn btn-xs"
+            style={{ flex: 1, background: '#fee2e2', color: '#991b1b' }}
+            onClick={() => {
+              if (window.confirm(`Deactivate ${timer.name}?\n\nTheir card will be hidden but all time logs and history will be preserved.`)) onDeactivate(timer.id);
+            }}
+          >
+            Deactivate
+          </button>
+        )}
+      </div>
+
+      {timer.hireDate && <div className="hire-date">Hire date: {timer.hireDate}</div>}
+    </div>
+  );
+}
+
+function AppTimeKeeper({sessions,costs,onSessionAction,onCostAction,tick}) {
+  const [newApp,setNewApp]=useState('');
+  const [newCostName,setNewCostName]=useState('');
+  const [newCostAmt,setNewCostAmt]=useState('');
+  const [newCostPeriod,setNewCostPeriod]=useState('monthly');
+
+  function getAppElapsed(s) {
+    if(!s.isRunning&&!s.isPaused)return 0;
+    const now=Date.now();
+    if(s.isRunning)return Math.max(0,(now-s.startTime-(s.totalPausedMs||0))/1000);
+    return Math.max(0,(s.pauseStartTime-s.startTime-(s.totalPausedMs||0))/1000);
+  }
+  function getAppTotal(s){return(s.savedSec||0)+getAppElapsed(s);}
+  const activeSessions=sessions.filter(s=>s.isRunning||s.isPaused);
+  const finishedSessions=sessions.filter(s=>!s.isRunning&&!s.isPaused);
+  const todaySec=sessions.filter(s=>s.date===getCTDateStr()).reduce((sum,s)=>sum+getAppTotal(s),0);
+  const weekSec=sessions.filter(s=>getCTWeekStr(new Date(s.date))===getCTWeekStr()).reduce((sum,s)=>sum+getAppTotal(s),0);
+  const monthSec=sessions.filter(s=>s.date&&s.date.startsWith(getCTMonthStr())).reduce((sum,s)=>sum+getAppTotal(s),0);
+  const todayEarnings=(todaySec/3600)*DEV_RATE;
+  const appMap={};
+  sessions.forEach(s=>{const k=s.appName;appMap[k]=(appMap[k]||0)+getAppTotal(s);});
+  const topApps=Object.entries(appMap).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const monthlyTotal=costs.reduce((s,c)=>s+(c.period==='monthly'?c.cost:c.cost/12),0);
+  const annualTotal=costs.reduce((s,c)=>s+(c.period==='annual'?c.cost:c.cost*12),0);
+
+  return(
+    <div className="app-section">
+      <div className="app-section-header">
+        <div><div className="app-section-title">App Development Time Keeper</div><div className="app-section-brand">ProGuide Tech Solutions</div></div>
+        <span style={{fontSize:'.72rem',color:'rgba(255,255,255,.5)'}}>{activeSessions.length} active session{activeSessions.length!==1?'s':''}</span>
+      </div>
+      <div className="app-grid">
+        <div className="app-col">
+          <div className="app-col-title">Active Sessions</div>
+          <div className="app-new-row">
+            <input className="app-new-input" placeholder="App / project name…" value={newApp} onChange={e=>setNewApp(e.target.value)} onKeyDown={e=>e.key==='Enter'&&newApp.trim()&&onSessionAction('start',null,newApp)} />
+            <button className="btn btn-green btn-sm" onClick={()=>newApp.trim()&&onSessionAction('start',null,newApp)}>+ Start</button>
+          </div>
+          {activeSessions.length===0&&<div style={{color:'var(--gray)',fontSize:'.8rem',fontStyle:'italic',padding:'8px 0'}}>No active sessions. Start one above.</div>}
+          {activeSessions.map(s=>(
+            <div key={s.id} className="app-session-card">
+              <div className="app-session-name">{s.appName}</div>
+              <div className={`app-session-timer ${s.isPaused?'paused':''}`}>{fmtSec(getAppTotal(s))}</div>
+              <div className="app-session-actions">
+                {s.isRunning&&<button className="btn btn-yellow btn-sm" onClick={()=>onSessionAction('pause',s.id)}>⏸ Pause</button>}
+                {s.isPaused&&<button className="btn btn-green btn-sm" onClick={()=>onSessionAction('resume',s.id)}>▶ Resume</button>}
+                <button className="btn btn-red btn-sm" onClick={()=>onSessionAction('stop',s.id)}>⏹ Stop</button>
+              </div>
+              <div style={{fontSize:'.65rem',color:'var(--gray)',marginTop:4}}>{s.isRunning?'Running':'Paused'} · {fmtHM(getAppTotal(s))} · {fmtMoney((getAppTotal(s)/3600)*DEV_RATE)}</div>
+            </div>
+          ))}
+          {finishedSessions.length>0&&(
+            <div>
+              <div style={{fontSize:'.68rem',color:'var(--gray)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',margin:'12px 0 6px'}}>Completed</div>
+              {finishedSessions.slice(-5).reverse().map(s=>(
+                <div key={s.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 0',borderBottom:'1px solid #f1f5f9',fontSize:'.78rem'}}>
+                  <div><span style={{fontWeight:600,color:'var(--navy)'}}>{s.appName}</span><span style={{color:'var(--gray)',marginLeft:8,fontSize:'.7rem'}}>{s.date}</span></div>
+                  <span style={{color:'var(--gray)'}}>{fmtHM(getAppTotal(s))}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="app-col">
+          <div className="app-col-title">Hours Tracked</div>
+          {[{label:'Today',val:fmtHM(todaySec)},{label:'This Week',val:fmtHM(weekSec)},{label:'This Month',val:fmtHM(monthSec)}].map(r=>(
+            <div key={r.label} className="stat-card"><span className="stat-card-label">{r.label}</span><span className="stat-card-value">{r.val}</span></div>
+          ))}
+          <div className="stat-card"><span className="stat-card-label">Today's Earnings @ ${DEV_RATE}/hr</span><span className="stat-card-value earnings">{fmtMoney(todayEarnings)}</span></div>
+          <div style={{marginTop:16,padding:'12px',background:'var(--gray-bg)',borderRadius:'var(--radius-sm)'}}>
+            <div style={{fontSize:'.7rem',color:'var(--gray)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Weekly Breakdown</div>
+            {['Monday','Tuesday','Wednesday','Thursday','Friday'].map(d=>{
+              const daySec=sessions.filter(s=>{try{return new Date(s.date).toLocaleDateString('en-US',{timeZone:TZ,weekday:'long'})===d;}catch(e){return false;}}).reduce((sum,s)=>sum+getAppTotal(s),0);
+              return(<div key={d} style={{display:'flex',justifyContent:'space-between',fontSize:'.78rem',padding:'3px 0'}}><span style={{color:'var(--gray)'}}>{d.slice(0,3)}</span><span style={{fontWeight:600,color:daySec>0?'var(--navy)':'#d1d5db'}}>{fmtHM(daySec)}</span></div>);
+            })}
+          </div>
+        </div>
+
+        <div className="app-col">
+          <div className="app-col-title">App Summary</div>
+          {topApps.length===0?<div style={{color:'var(--gray)',fontSize:'.8rem',fontStyle:'italic'}}>No data yet</div>:topApps.map(([name,sec])=>(
+            <div key={name} className="app-summary-row"><div><div className="app-summary-name">{name}</div><div className="app-summary-hours">{fmtHM(sec)}</div></div><div className="app-summary-earn">{fmtMoney((sec/3600)*DEV_RATE)}</div></div>
+          ))}
+          <div style={{height:16}} />
+          <div className="app-col-title">Tool Subscriptions</div>
+          {costs.map(c=>(
+            <div key={c.id} className="cost-row">
+              <div><div className="cost-name">{c.name}</div><div className="cost-period">{c.period}</div></div>
+              <div style={{display:'flex',alignItems:'center',gap:8}}><span className="cost-amount">{fmtMoney(c.cost)}</span><button onClick={()=>onCostAction('remove',c.id)} style={{background:'none',border:'none',cursor:'pointer',color:'#9ca3af',fontSize:'.75rem'}}>✕</button></div>
+            </div>
+          ))}
+          <div className="cost-total"><span style={{color:'var(--gray)'}}>Monthly Total:</span><span style={{color:'var(--red)'}}>{fmtMoney(monthlyTotal)}/mo</span></div>
+          <div className="cost-total" style={{paddingTop:4,borderTop:'none',fontSize:'.72rem'}}><span style={{color:'var(--gray)'}}>Annual:</span><span style={{color:'#6b7280'}}>{fmtMoney(annualTotal)}/yr</span></div>
+          <div className="cost-add-row">
+            <input className="cost-input" placeholder="Subscription name" value={newCostName} onChange={e=>setNewCostName(e.target.value)} />
+            <div className="cost-input-row">
+              <input className="cost-input" style={{flex:1}} placeholder="Cost $" type="number" step="0.01" value={newCostAmt} onChange={e=>setNewCostAmt(e.target.value)} />
+              <select className="cost-input" value={newCostPeriod} onChange={e=>setNewCostPeriod(e.target.value)}><option value="monthly">Monthly</option><option value="annual">Annual</option></select>
+            </div>
+            <button className="btn btn-navy btn-sm" onClick={()=>{if(!newCostName.trim()||!newCostAmt)return;onCostAction('add',null,{name:newCostName.trim(),cost:parseFloat(newCostAmt),period:newCostPeriod});setNewCostName('');setNewCostAmt('');}}>+ Add Subscription</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== EMPLOYEE EDIT MODAL ====================
+function EmployeeEditModal({timer,onClose,onSave}) {
+  const [editData,setEditData]=useState({
+    name:timer.name||'',
+    title:timer.title||'',
+    hourlyWage:timer.hourlyWage||0,
+    wageType:timer.wageType||'hourly',
+    hireDate:timer.hireDate||'',
+    isExempt:timer.isExempt||false,
+    profileImage:timer.profileImage||null,
+    assignedHours:{...(timer.assignedHours||STD_SCHED)},
+  });
+  const [imagePreview,setImagePreview]=useState(timer.profileImage||null);
+
+  function handleImageUpload(e) {
+    const file=e.target.files[0];
+    if(file){
+      const reader=new FileReader();
+      reader.onload=ev=>{setImagePreview(ev.target.result);setEditData(p=>({...p,profileImage:ev.target.result}));};
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function handleRemoveImage() {
+    setImagePreview(null);
+    setEditData(p=>({...p,profileImage:null}));
+  }
+
+  function handleSave() {
+    onSave(timer.id,editData);
+    onClose();
+  }
+
+  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const initials=timer.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-title">Edit Employee Details</div>
+          <button className="modal-close" onClick={onClose}>&times;</button>
+        </div>
+        <div className="emp-edit-modal-body">
+          {/* Header with Avatar */}
+          <div className="emp-edit-header">
+            <div className="emp-avatar-large">
+              {imagePreview?<img src={imagePreview} alt={timer.name} />:initials}
+            </div>
+            <div className="emp-edit-name-section">
+              <input className="emp-edit-name-input" value={editData.name} onChange={e=>setEditData(p=>({...p,name:e.target.value}))} placeholder="Employee Name" />
+              <input className="emp-edit-title-input" value={editData.title} onChange={e=>setEditData(p=>({...p,title:e.target.value}))} placeholder="Job Title / Role" />
+            </div>
+          </div>
+
+          {/* Profile Picture Upload */}
+          <div className="emp-edit-section">
+            <div className="emp-edit-section-title">Profile Picture</div>
+            <div className="emp-avatar-upload">
+              <div className="emp-avatar-preview">
+                {imagePreview?<img src={imagePreview} alt="Preview" />:initials}
+              </div>
+              <label className="emp-avatar-btn">Upload Photo<input type="file" accept="image/*" onChange={handleImageUpload} style={{display:'none'}} /></label>
+              {imagePreview&&<button className="emp-avatar-remove" onClick={handleRemoveImage}>Remove</button>}
+            </div>
+          </div>
+
+          {/* Basic Info */}
+          <div className="emp-edit-section">
+            <div className="emp-edit-section-title">Employment Information</div>
+            <div className="emp-edit-row">
+              <div className="emp-edit-field">
+                <label className="emp-edit-label">Hire Date</label>
+                <input className="emp-edit-input-full" type="date" value={editData.hireDate} onChange={e=>setEditData(p=>({...p,hireDate:e.target.value}))} />
+              </div>
+              <div className="emp-edit-field">
+                <label className="emp-edit-label">Employment Type</label>
+                <select className="emp-edit-input-full" value={editData.isExempt?'exempt':'non-exempt'} onChange={e=>setEditData(p=>({...p,isExempt:e.target.value==='exempt'}))}>
+                  <option value="non-exempt">Non-Exempt (Hourly)</option>
+                  <option value="exempt">Exempt (Salary)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Pay Settings */}
+          <div className="emp-edit-section">
+            <div className="emp-edit-section-title">Pay Settings</div>
+            <div className="emp-edit-row">
+              <div className="emp-edit-field">
+                <label className="emp-edit-label">Pay Type</label>
+                <select className="emp-edit-input-full" value={editData.wageType} onChange={e=>setEditData(p=>({...p,wageType:e.target.value}))}>
+                  <option value="hourly">Hourly</option>
+                  <option value="flat">Flat Rate (per shift)</option>
+                </select>
+              </div>
+              <div className="emp-edit-field">
+                <label className="emp-edit-label">{editData.wageType==='flat'?'Rate per Shift':'Hourly Rate ($)'}</label>
+                <input className="emp-edit-input-full" type="number" step="0.01" min="0" value={editData.hourlyWage} onChange={e=>setEditData(p=>({...p,hourlyWage:parseFloat(e.target.value)||0}))} />
+              </div>
+            </div>
+          </div>
+
+          {/* Schedule */}
+          <div className="emp-edit-section">
+            <div className="emp-edit-section-title">Weekly Schedule</div>
+            <div className="schedule-edit-grid">
+              {days.map(day=>(
+                <div key={day} className="schedule-day-col">
+                  <div className="schedule-day-header">{day.slice(0,3)}</div>
+                  <div className="schedule-day-toggle">
+                    <input type="checkbox" checked={!!editData.assignedHours[day]} onChange={e=>{
+                      const newSched={...editData.assignedHours};
+                      if(e.target.checked){
+                        newSched[day]={start:'9:00am',end:'5:00pm'};
+                      }else{
+                        delete newSched[day];
+                      }
+                      setEditData(p=>({...p,assignedHours:newSched}));
+                    }} />
+                    <label>Active</label>
+                  </div>
+                  {editData.assignedHours[day]&&(
+                    <>
+                      <input className="schedule-time-input" value={editData.assignedHours[day].start||''} onChange={e=>{
+                        const newSched={...editData.assignedHours,[day]:{...editData.assignedHours[day],start:e.target.value}};
+                        setEditData(p=>({...p,assignedHours:newSched}));
+                      }} placeholder="Start" />
+                      <input className="schedule-time-input" value={editData.assignedHours[day].end||''} onChange={e=>{
+                        const newSched={...editData.assignedHours,[day]:{...editData.assignedHours[day],end:e.target.value}};
+                        setEditData(p=>({...p,assignedHours:newSched}));
+                      }} placeholder="End" style={{marginTop:4}} />
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-gray" onClick={onClose}>Cancel</button>
+          <button className="btn btn-green" onClick={handleSave}>Save Changes</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== SCHEDULE MANAGEMENT MODAL ====================
+function ScheduleManagementModal({timers,onClose,onUpdateSchedule}) {
+  const [selectedEmp,setSelectedEmp]=useState(timers[0]?.id||null);
+  const currentTimer=timers.find(t=>t.id===selectedEmp)||timers[0];
+  const [schedule,setSchedule]=useState(currentTimer?.assignedHours||{});
+  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+  function handleDayToggle(day,checked) {
+    const newSched={...schedule};
+    if(checked){
+      newSched[day]={start:'9:00am',end:'5:00pm'};
+    }else{
+      delete newSched[day];
+    }
+    setSchedule(newSched);
+  }
+
+  function handleTimeChange(day,field,value) {
+    const newSched={...schedule};
+    if(newSched[day]){
+      newSched[day]={...newSched[day],[field]:value};
+    }
+    setSchedule(newSched);
+  }
+
+  function handleSaveSchedule() {
+    onUpdateSchedule(selectedEmp,schedule);
+  }
+
+  function handlePrintSchedule() {
+    const printWindow=window.open('','_blank');
+    const empName=currentTimer?.name||'Employee';
+    let html=`<html><head><title>${empName} - Weekly Schedule</title>`;
+    html+=`<style>body{font-family:'Segoe UI',sans-serif;padding:20px;}
+      h1{color:#0d1b3e;border-bottom:2px solid #c9a84c;padding-bottom:10px;}
+      table{width:100%;border-collapse:collapse;margin-top:20px;}
+      th{background:#0d1b3e;color:#fff;padding:12px;text-align:center;}
+      td{padding:12px;border:1px solid #ddd;text-align:center;}
+      .inactive{color:#999;}</style></head><body>`;
+    html+=`<h1>${empName} - Weekly Schedule</h1>`;
+    html+=`<table><tr><th>Day</th><th>Status</th><th>Start Time</th><th>End Time</th></tr>`;
+    days.forEach(day=>{
+      const sched=schedule[day];
+      if(sched){
+        html+=`<tr><td>${day}</td><td>Active</td><td>${sched.start}</td><td>${sched.end}</td></tr>`;
+      }else{
+        html+=`<tr><td>${day}</td><td class="inactive">Off</td><td class="inactive">—</td><td class="inactive">—</td></tr>`;
+      }
+    });
+    html+=`</table></body></html>`;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+  }
+
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-title">Manage Employee Schedules</div>
+          <button className="modal-close" onClick={onClose}>&times;</button>
+        </div>
+        <div className="modal-body">
+          {/* Employee Selector */}
+          <div style={{marginBottom:20}}>
+            <label style={{fontSize:'.75rem',fontWeight:700,color:'var(--navy)',textTransform:'uppercase',letterSpacing:'.5px',display:'block',marginBottom:8}}>Select Employee</label>
+            <select className="emp-edit-input-full" value={selectedEmp||''} onChange={e=>{
+              const emp=timers.find(t=>t.id===parseInt(e.target.value));
+              setSelectedEmp(parseInt(e.target.value));
+              setSchedule(emp?.assignedHours||{});
+            }}>
+              {timers.filter(t=>!t.isHidden).map(t=>(
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Schedule Grid */}
+          <div className="schedule-edit-grid">
+            {days.map(day=>(
+              <div key={day} className="schedule-day-col">
+                <div className="schedule-day-header">{day}</div>
+                <div className="schedule-day-toggle">
+                  <input type="checkbox" checked={!!schedule[day]} onChange={e=>handleDayToggle(day,e.target.checked)} />
+                  <label>Active</label>
+                </div>
+                {schedule[day]&&(
+                  <>
+                    <input className="schedule-time-input" value={schedule[day].start||''} onChange={e=>handleTimeChange(day,'start',e.target.value)} placeholder="Start" />
+                    <input className="schedule-time-input" value={schedule[day].end||''} onChange={e=>handleTimeChange(day,'end',e.target.value)} placeholder="End" style={{marginTop:4}} />
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="schedule-print-btn" onClick={handlePrintSchedule}>🖨 Print Schedule</button>
+          <button className="btn btn-gray" onClick={onClose}>Cancel</button>
+          <button className="btn btn-green" onClick={handleSaveSchedule}>Save Schedule</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== HOLIDAY SCHEDULE MODAL ====================
+function HolidayScheduleModal({onClose}) {
+  const getStatusClass=(status)=>{
+    if(status==='closed')return 'holiday-status-closed';
+    if(status==='optional')return 'holiday-status-optional';
+    if(status==='skeleton')return 'holiday-status-skeleton';
+    return 'holiday-status-none';
+  };
+
+  const getStatusLabel=(status)=>{
+    if(status==='closed')return 'Closed';
+    if(status==='optional')return 'Optional';
+    if(status==='skeleton')return 'Skeleton';
+    return 'Open';
+  };
+
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-xl" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-title">State Holiday Schedule - Fiscal Year 2026</div>
+          <button className="modal-close" onClick={onClose}>&times;</button>
+        </div>
+        <div className="modal-body">
+          <table className="holiday-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Holiday</th>
+                <th>Agency Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {STATE_HOLIDAYS_FY2026.map((h,i)=>(
+                <tr key={i}>
+                  <td className="holiday-date">{h.date}</td>
+                  <td>{h.day}</td>
+                  <td className="holiday-name">{h.name}</td>
+                  <td><span className={`holiday-status ${getStatusClass(h.status)}`}>{getStatusLabel(h.status)}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{marginTop:16,fontSize:'.75rem',color:'var(--gray)',fontStyle:'italic'}}>
+            * When two holidays fall on the same day, only one holiday will be observed. All state agencies will be closed on January 19, 2026, in observance of Martin Luther King, Jr. Day.
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-navy" onClick={()=>{
+            const printWindow=window.open('','_blank');
+            let html=`<html><head><title>FY 2026 Holiday Schedule</title>`;
+            html+=`<style>body{font-family:'Segoe UI',sans-serif;padding:20px;}
+              h1{color:#0d1b3e;border-bottom:2px solid #c9a84c;padding-bottom:10px;}
+              table{width:100%;border-collapse:collapse;margin-top:20px;}
+              th{background:#0d1b3e;color:#fff;padding:10px;text-align:left;}
+              td{padding:10px;border-bottom:1px solid #ddd;}</style></head><body>`;
+            html+=`<h1>State Holiday Schedule - Fiscal Year 2026</h1>`;
+            html+=`<table><tr><th>Date</th><th>Day</th><th>Holiday</th><th>Status</th></tr>`;
+            STATE_HOLIDAYS_FY2026.forEach(h=>{
+              html+=`<tr><td>${h.date}</td><td>${h.day}</td><td>${h.name}</td><td>${getStatusLabel(h.status)}</td></tr>`;
+            });
+            html+=`</table></body></html>`;
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.print();
+          }}>🖨 Print Holiday Schedule</button>
+          <button className="btn btn-gray" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== MAIN APP ====================
+function App() {
+  const [timers,setTimers]             = useState(()=>loadTimers().map(doCheckResets));
+  const [tick,setTick]                 = useState(0);
+  const [modal,setModal]               = useState('none');
+  const [notify,setNotify]             = useState(null);
+  const [payrollText,setPayrollText]   = useState('');
+  const [lastSaved,setLastSaved]       = useState(null);
+  const [otAlert,setOtAlert]           = useState({show:false,timerId:null});
+  const [appSessions,setAppSessions]   = useState(loadAppSessions);
+  const [appCosts,setAppCosts]         = useState(loadAppCosts);
+  const [auditLog,setAuditLog]             = useState(loadAuditLog);
+  const [auditEmpFilter,setAuditEmpFilter] = useState(null);
+  const [correctionTimerId,setCorrectionTimerId] = useState(null);
+  const [payrollPeriods,setPayrollPeriods] = useState(loadPayrollPeriods);
+  const [showPayrollPage,setShowPayrollPage] = useState(false);
+  const [showAddEmployee,setShowAddEmployee] = useState(false);
+  const [activePage,setActivePage]           = useState(()=>localStorage.getItem('activeBusinessPage')||'pageEmployeeClock');
+  const [editEmployeeId,setEditEmployeeId]   = useState(null);  // For employee edit modal
+  const [showScheduleModal,setShowScheduleModal] = useState(false);  // For schedule management
+  const [showHolidayModal,setShowHolidayModal] = useState(false);  // For holiday schedule
+  const otAlerted = useRef(new Set());
+
+  useEffect(()=>{const iv=setInterval(()=>setTick(n=>n+1),1000);return()=>clearInterval(iv);},[]);
+
+  useEffect(()=>{
+    setTimers(prev=>prev.map(t=>{
+      const u=doCheckResets(t);
+      if(u.isRunning&&!otAlerted.current.has(u.id)){
+        const endSec=getScheduleEndSec(u);const todaySec=getTodaySec(u);
+        if(endSec!==null&&todaySec>endSec){otAlerted.current.add(u.id);setOtAlert({show:true,timerId:u.id});}
+      }
+      return u;
+    }));
+    setAppSessions(p=>p);
+  },[tick]);
+
+  useEffect(()=>{const iv=setInterval(doSave,AUTOSAVE_MS);return()=>clearInterval(iv);},[timers,appSessions,appCosts,auditLog]);
+
+  function addAudit(entry) {
+    setAuditLog(prev=>{
+      const next=[...prev,entry];
+      try{localStorage.setItem(STORAGE_AUDIT,JSON.stringify(next));}catch(e){}
+      return next;
+    });
+  }
+
+  function doSave() {
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(timers.map(t=>{const{isRunning,isPaused,clockInTime,pauseStartTime,totalPausedMs,...rest}=t;return rest;})));
+      localStorage.setItem(STORAGE_APPS,JSON.stringify(appSessions));
+      localStorage.setItem(STORAGE_COSTS,JSON.stringify(appCosts));
+      localStorage.setItem(STORAGE_AUDIT,JSON.stringify(auditLog));
+      savePayrollPeriods(payrollPeriods);
+      setLastSaved(Date.now());
+    }catch(e){console.warn('Save failed:',e);}
+  }
+
+  function showNotify(msg,type='info'){setNotify({msg,type});}
+
+  function handleClockIn(id) {
+    const timer=timers.find(t=>t.id===id);
+    if(!timer)return;
+    const res=canClockIn(timer);
+    if(!res.ok){showNotify(res.reason,'error');return;}
+    otAlerted.current.delete(id);
+    setTimers(prev=>prev.map(t=>t.id===id?doClockIn(t):t));
+    addAudit(mkAuditEntry({empId:id,empName:timer.name,actionType:'CLOCK_IN',newValue:fmtTSFull(Date.now()),performedBy:timer.name,isAdminEdit:false}));
+  }
+
+  function handlePause(id) {
+    const timer=timers.find(t=>t.id===id);
+    if(!timer)return;
+    setTimers(prev=>prev.map(t=>t.id===id?doPause(t):t));
+    addAudit(mkAuditEntry({empId:id,empName:timer.name,actionType:'BREAK_START',newValue:fmtTSFull(Date.now()),performedBy:timer.name,isAdminEdit:false}));
+  }
+
+  function handleResume(id) {
+    const timer=timers.find(t=>t.id===id);
+    if(!timer)return;
+    setTimers(prev=>prev.map(t=>t.id===id?doResume(t):t));
+    addAudit(mkAuditEntry({empId:id,empName:timer.name,actionType:'BREAK_END',newValue:fmtTSFull(Date.now()),performedBy:timer.name,isAdminEdit:false}));
+  }
+
+  function handleClockOut(id) {
+    const timer=timers.find(t=>t.id===id);
+    if(!timer)return;
+    const elapsed=getElapsedSec(timer);
+    otAlerted.current.delete(id);
+    setTimers(prev=>prev.map(t=>t.id===id?doClockOut(t):t));
+    addAudit(mkAuditEntry({empId:id,empName:timer.name,actionType:'CLOCK_OUT',
+      originalValue:timer.clockInTime?fmtTSFull(timer.clockInTime):'—',
+      newValue:`Out at ${fmtTSFull(Date.now())} · ${fmtHM(elapsed)}`,
+      performedBy:timer.name,isAdminEdit:false}));
+  }
+
+  function handleEditName(id,name) {
+    const timer=timers.find(t=>t.id===id);
+    if(!timer)return;
+    const oldName=timer.name;
+    setTimers(prev=>prev.map(t=>t.id===id?{...t,name:name||t.name}:t));
+    addAudit(mkAuditEntry({empId:id,empName:name||oldName,actionType:'NAME_EDIT',
+      originalValue:oldName,newValue:name,performedBy:'Administrator',isAdminEdit:true,
+      reason:'Employee name updated by admin'}));
+  }
+
+  function handleSaveEmployeeEdit(id,editData) {
+    const timer=timers.find(t=>t.id===id);
+    if(!timer)return;
+    const oldData={name:timer.name,title:timer.title,hourlyWage:timer.hourlyWage,wageType:timer.wageType,hireDate:timer.hireDate,isExempt:timer.isExempt,profileImage:timer.profileImage,assignedHours:timer.assignedHours};
+    setTimers(prev=>prev.map(t=>t.id===id?{...t,...editData}:t));
+    addAudit(mkAuditEntry({empId:id,empName:editData.name,actionType:'MANUAL_EDIT',
+      originalValue:JSON.stringify(oldData),
+      newValue:JSON.stringify(editData),
+      performedBy:'Administrator',isAdminEdit:true,
+      reason:'Employee details updated via edit modal'}));
+    showNotify(`Employee ${editData.name} details updated successfully.`,'success');
+  }
+
+  function handleUpdateSchedule(empId,schedule) {
+    const timer=timers.find(t=>t.id===empId);
+    if(!timer)return;
+    const oldSched=JSON.stringify(timer.assignedHours||{});
+    setTimers(prev=>prev.map(t=>t.id===empId?{...t,assignedHours:schedule}:t));
+    addAudit(mkAuditEntry({empId,empName:timer.name,actionType:'MANUAL_EDIT',
+      originalValue:`Schedule: ${oldSched}`,
+      newValue:`Schedule: ${JSON.stringify(schedule)}`,
+      performedBy:'Administrator',isAdminEdit:true,
+      reason:'Employee schedule updated'}));
+    showNotify(`Schedule updated for ${timer.name}.`,'success');
+  }
+
+  function handleOTChoice(choice) {
+    const tid=otAlert.timerId;
+    const timer=timers.find(t=>t.id===tid);
+    setOtAlert({show:false,timerId:null});
+    if(choice==='stop'){
+      handleClockOut(tid);
+      showNotify('Timer stopped. Hours saved.','info');
+    }else{
+      setTimers(prev=>prev.map(t=>t.id!==tid?t:{...t,otMode:choice}));
+      if(timer){addAudit(mkAuditEntry({empId:tid,empName:timer.name,actionType:'OVERTIME_CHOICE',
+        newValue:choice==='credits'?'PTO Credits selected':'Paid OT selected',performedBy:timer.name,isAdminEdit:false}));}
+      showNotify(choice==='credits'?'PTO Credits mode activated.':'Paid overtime mode activated.','success');
+    }
+  }
+
+  function handleAdminCorrection({timer,corrType,originalSec,newSec,reason,performedBy}) {
+    setCorrectionTimerId(null);
+    const fieldMap={today:'todaySavedSec',week:'weekSavedSec',month:'monthSavedSec'};
+    const field=fieldMap[corrType];
+    const labelMap={today:"Today's Hours",week:"Week's Hours",month:"Month's Hours"};
+    setTimers(prev=>prev.map(t=>t.id!==timer.id?t:{...t,[field]:newSec}));
+    addAudit(mkAuditEntry({empId:timer.id,empName:timer.name,actionType:'ADMIN_CORRECTION',
+      originalValue:`${labelMap[corrType]}: ${fmtHM(originalSec)}`,
+      newValue:`${labelMap[corrType]}: ${fmtHM(newSec)}`,
+      performedBy,isAdminEdit:true,reason}));
+    showNotify(`Correction saved for ${timer.name}. Audit entry created.`,'success');
+  }
+
+  function handlePayroll() {
+    setPayrollText(generatePayrollReport(timers));
+    setModal('payroll');
+    timers.forEach(t=>{
+      addAudit(mkAuditEntry({empId:t.id,empName:t.name,actionType:'PAYROLL_LOCKED',
+        newValue:`Report generated ${fmtTSFull(Date.now())}`,performedBy:'Administrator',isAdminEdit:true}));
+    });
+  }
+
+  function handleClear(sel) {
+    setModal('none');
+    if(sel.everything||(sel.todayHours&&sel.weekHours&&sel.monthHours&&sel.sessions&&sel.ptoData)){
+      setTimers(prev=>prev.map(t=>mkFreshTimer(EMPLOYEE_CONFIGS.find(c=>c.id===t.id)||t)));
+    }else{
+      setTimers(prev=>prev.map(t=>{
+        let u={...t};
+        if(sel.todayHours)u.todaySavedSec=0;
+        if(sel.weekHours)u.weekSavedSec=0;
+        if(sel.monthHours)u.monthSavedSec=0;
+        if(sel.sessions)u.sessions=[];
+        if(sel.ptoData){u.ptoCredits=0;u.ptoHours=0;}
+        return u;
+      }));
+    }
+    if(sel.appSessions||sel.everything)setAppSessions([]);
+    if(sel.appCosts||sel.everything)setAppCosts(DEFAULT_COSTS);
+    if(sel.auditLog||sel.everything){setAuditLog([]);try{localStorage.removeItem(STORAGE_AUDIT);}catch(e){}}
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(timers));localStorage.setItem(STORAGE_APPS,JSON.stringify(appSessions));localStorage.setItem(STORAGE_COSTS,JSON.stringify(appCosts));}catch(e){}
+    showNotify('Selected data cleared.','success');
+  }
+
+  function handleSessionAction(action,id,appName) {
+    setAppSessions(prev=>{
+      if(action==='start'){return[...prev,{id:Date.now().toString(),appName:appName.trim(),isRunning:true,isPaused:false,startTime:Date.now(),pauseStartTime:null,totalPausedMs:0,savedSec:0,date:getCTDateStr()}];}
+      return prev.map(s=>{
+        if(s.id!==id)return s;
+        if(action==='pause')return{...s,isRunning:false,isPaused:true,pauseStartTime:Date.now()};
+        if(action==='resume'){const pms=Date.now()-s.pauseStartTime;return{...s,isRunning:true,isPaused:false,pauseStartTime:null,totalPausedMs:(s.totalPausedMs||0)+pms};}
+        if(action==='stop'){const elapsed=s.isRunning?Math.max(0,(Date.now()-s.startTime-(s.totalPausedMs||0))/1000):s.isPaused?Math.max(0,(s.pauseStartTime-s.startTime-(s.totalPausedMs||0))/1000):0;return{...s,isRunning:false,isPaused:false,savedSec:(s.savedSec||0)+elapsed,startTime:null,pauseStartTime:null,totalPausedMs:0};}
+        return s;
+      });
+    });
+  }
+
+  function handleCostAction(action,id,data) {
+    if(action==='add')setAppCosts(prev=>[...prev,{id:Date.now().toString(),...data}]);
+    else if(action==='remove')setAppCosts(prev=>prev.filter(c=>c.id!==id));
+  }
+
+  function handleSavePeriod(period) {
+    setPayrollPeriods(prev=>{
+      const idx=prev.findIndex(p=>p.id===period.id);
+      const next=idx>=0?prev.map((p,i)=>i===idx?period:p):[...prev,period];
+      savePayrollPeriods(next);
+      return next;
+    });
+  }
+
+  function handleAddEmployee({name,title,payType,rate,hireDate,isOwner}) {
+    const newId=Date.now();
+    const newTimer={
+      id:newId,name,title,hireDate,
+      hourlyWage:rate,wageType:payType,
+      assignedHours:{...STD_SCHED},isExempt:false,isNameEditable:true,
+      isOwner:!!isOwner,isHidden:false,
+      isRunning:false,isPaused:false,clockInTime:null,pauseStartTime:null,totalPausedMs:0,
+      todaySavedSec:0,weekSavedSec:0,monthSavedSec:0,
+      ptoCredits:0,ptoHours:0,
+      lastDate:null,lastWeek:null,lastMonth:null,sessions:[],otMode:'paid'
+    };
+    setTimers(prev=>{
+      const next=[...prev,newTimer];
+      try{
+        const {isRunning,isPaused,clockInTime,pauseStartTime,totalPausedMs,...rest}=newTimer;
+        const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+        saved.push(rest);
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(saved));
+      }catch(e){}
+      return next;
+    });
+    setShowAddEmployee(false);
+    showNotify(`${name} added to the dashboard.`,'success');
+    addAudit(mkAuditEntry({empId:newId,empName:name,actionType:'SYSTEM_ENTRY',
+      newValue:`New employee added: ${name} · ${payType==='flat'?'Flat $'+rate+'/shift':'$'+rate+'/hr'} · ${isOwner?'Owner':'Staff'}`,
+      performedBy:'Administrator',isAdminEdit:true}));
+  }
+
+  function handleDeactivateEmployee(id) {
+    const t=timers.find(x=>x.id===id);if(!t)return;
+    setTimers(prev=>prev.map(x=>x.id===id?{...x,isHidden:true}:x));
+    showNotify(`${t.name} deactivated. All time logs preserved.`,'info');
+    addAudit(mkAuditEntry({empId:id,empName:t.name,actionType:'SYSTEM_ENTRY',
+      newValue:'Employee deactivated — card hidden, logs preserved',
+      performedBy:'Administrator',isAdminEdit:true}));
+  }
+
+  function handleReactivateEmployee(id) {
+    const t=timers.find(x=>x.id===id);if(!t)return;
+    setTimers(prev=>prev.map(x=>x.id===id?{...x,isHidden:false}:x));
+    showNotify(`${t.name} reactivated.`,'success');
+    addAudit(mkAuditEntry({empId:id,empName:t.name,actionType:'SYSTEM_ENTRY',
+      newValue:'Employee reactivated — card visible on dashboard',
+      performedBy:'Administrator',isAdminEdit:true}));
+  }
+
+  function showPage(pageId) {
+    setActivePage(pageId);
+    localStorage.setItem('activeBusinessPage',pageId);
+  }
+
+  const now=getCTNow();
+  const dayStr=now.toLocaleDateString('en-US',{timeZone:TZ,weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const timeStr=now.toLocaleTimeString('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
+  const todayHoliday=isHoliday(getCTDateStr(now));
+  const otTimer=timers.find(t=>t.id===otAlert.timerId);
+  const correctionTimer=timers.find(t=>t.id===correctionTimerId);
+
+  return(
+    <div>
+      <div className="header">
+        <div className="header-brand">
+          <div className="header-title">{activePage==='pageEmployeeClock'?'iTeam Legal Solutions':'ProGuide Tech Solutions'}</div>
+          <div className="header-sub">{activePage==='pageEmployeeClock'?'Employee Time Tracking System':'App Development Time Keeper'}</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+          <div style={{fontSize:'.85rem',fontWeight:600,color:'rgba(255,255,255,.9)'}}>{timeStr}</div>
+          <div style={{fontSize:'.7rem',color:'var(--gold2)'}}>{dayStr}</div>
+          {todayHoliday&&<div style={{fontSize:'.68rem',color:'#fca5a5',fontWeight:600}}>⚠ Office Holiday</div>}
+        </div>
+        <div className="header-actions">
+          {activePage==='pageEmployeeClock'&&<>
+            {lastSaved&&<span className="save-status">Saved {fmtTS(lastSaved)}</span>}
+            <button className="btn btn-gold btn-sm" onClick={doSave}>💾 Save</button>
+            <button className="btn btn-outline btn-sm" onClick={()=>setModal('schedule')}>📅 Schedule</button>
+            <button className="btn btn-outline btn-sm" onClick={()=>setShowPayrollPage(true)}>📋 Payroll</button>
+            <button className="btn btn-purple btn-sm" onClick={()=>{setAuditEmpFilter(null);setModal('audit');}}>🔒 Audit Log</button>
+            <button className="btn btn-outline btn-sm" onClick={()=>setModal('clear')} style={{borderColor:'rgba(239,68,68,.5)',color:'#fca5a5'}}>🗑 Clear</button>
+          </>}
+        </div>
+      </div>
+
+      <Toast notify={notify} onClear={()=>setNotify(null)} />
+
+      <div className="app-shell">
+
+        {/* ── SIDEBAR ── */}
+        <nav className="sidebar">
+          <div className="sidebar-brand">
+            <div className="sidebar-brand-title">Business Dashboard</div>
+          </div>
+
+          {/* iTeam Legal Solutions */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">iTeam Legal Solutions</div>
+            <button data-page="pageEmployeeClock"
+              className={`sidebar-link${activePage==='pageEmployeeClock'?' active':''}`}
+              onClick={()=>showPage('pageEmployeeClock')}>
+              👥 Employee Clock
+            </button>
+            <button data-page="pageSchedule"
+              className={`sidebar-link${activePage==='pageSchedule'?' active':''}`}
+              onClick={()=>setShowScheduleModal(true)}>
+              📅 Schedule Manager
+            </button>
+            <button data-page="pageHolidays"
+              className={`sidebar-link${activePage==='pageHolidays'?' active':''}`}
+              onClick={()=>setShowHolidayModal(true)}>
+              🎌 Holiday Schedule
+            </button>
+            {/* ADD ITEAM PAGES HERE: Payroll, Schedule, Audit Log, Clients, etc. */}
+          </div>
+
+          {/* ProGuide Tech Solutions */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">ProGuide Tech Solutions</div>
+            <button data-page="pageAppDevTimeKeeper"
+              className={`sidebar-link${activePage==='pageAppDevTimeKeeper'?' active':''}`}
+              onClick={()=>showPage('pageAppDevTimeKeeper')}>
+              ⏱ App Dev Time Keeper
+            </button>
+            {/* ADD PROGUIDE PAGES HERE: Projects, Clients, Reports, Settings, etc. */}
+          </div>
+        </nav>
+
+        {/* ── CONTENT AREA ── */}
+        <div className="content-area">
+
+          {/* PAGE: Employee Clock */}
+          <div className={`page-view${activePage==='pageEmployeeClock'?' active':''}`}>
+            <div className="main">
+              <div className="page-title-bar">iTeam Legal Solutions — Employee Clock</div>
+              <div className="section-title">Staff Clock — {timers.filter(t=>!t.isHidden&&t.isRunning).length} active · {timers.filter(t=>!t.isHidden&&t.isPaused).length} on break</div>
+              <LivePayrollDashboard timers={timers} tick={tick} />
+              <div className="emp-grid">
+                {timers.filter(t=>!t.isHidden).map(t=>(
+                  <EmployeeCard key={t.id} timer={t} tick={tick}
+                    onClockIn={handleClockIn} onPause={handlePause}
+                    onResume={handleResume} onClockOut={handleClockOut}
+                    onEditName={handleEditName}
+                    onViewLog={(id)=>{setAuditEmpFilter(id);setModal('audit');}}
+                    onCorrect={(id)=>{setCorrectionTimerId(id);}}
+                    onDeactivate={!t.isOwner?handleDeactivateEmployee:null}
+                    onEditEmployee={(id)=>setEditEmployeeId(id)}
+                  />
+                ))}
+                <AddEmployeeCard onClick={()=>setShowAddEmployee(true)} />
+              </div>
+              <InactiveStaffSection timers={timers.filter(t=>t.isHidden)} onReactivate={handleReactivateEmployee} />
+            </div>
+          </div>
+
+          {/* PAGE: App Development Time Keeper */}
+          <div className={`page-view${activePage==='pageAppDevTimeKeeper'?' active':''}`}>
+            <div className="main">
+              <div className="page-title-bar">ProGuide Tech Solutions — App Development Time Keeper</div>
+              <AppTimeKeeper sessions={appSessions} costs={appCosts} tick={tick} onSessionAction={handleSessionAction} onCostAction={handleCostAction} />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <OvertimeModal alert={otAlert} timer={otTimer} onChoice={handleOTChoice} />
+      {modal==='payroll'  && <PayrollModal text={payrollText} onClose={()=>setModal('none')} />}
+      {modal==='schedule' && <ScheduleModal timers={timers.filter(t=>!t.isHidden)} onClose={()=>setModal('none')} />}
+      {modal==='clear'    && <ClearModal onClear={handleClear} onClose={()=>setModal('none')} />}
+      {modal==='audit'    && <AuditLogModal auditLog={auditLog} timers={timers} filterEmpId={auditEmpFilter} onClose={()=>setModal('none')} />}
+      {correctionTimerId!=null && <AdminCorrectionModal timer={correctionTimer} onSave={handleAdminCorrection} onClose={()=>setCorrectionTimerId(null)} />}
+      {showAddEmployee && <AddEmployeeModal onSave={handleAddEmployee} onClose={()=>setShowAddEmployee(false)} />}
+      {editEmployeeId!=null && <EmployeeEditModal timer={timers.find(t=>t.id===editEmployeeId)} onClose={()=>setEditEmployeeId(null)} onSave={handleSaveEmployeeEdit} />}
+      {showScheduleModal && <ScheduleManagementModal timers={timers.filter(t=>!t.isHidden)} onClose={()=>setShowScheduleModal(false)} onUpdateSchedule={handleUpdateSchedule} />}
+      {showHolidayModal && <HolidayScheduleModal onClose={()=>setShowHolidayModal(false)} />}
+
+      {showPayrollPage&&(
+        <PayrollPage
+          timers={timers}
+          auditLog={auditLog}
+          onAddAudit={addAudit}
+          payrollPeriods={payrollPeriods}
+          onSavePeriod={handleSavePeriod}
+          onClose={()=>setShowPayrollPage(false)}
+          onOpenAudit={()=>{setAuditEmpFilter(null);setModal('audit');}}
+        />
+      )}
+    </div>
+  );
+}
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
