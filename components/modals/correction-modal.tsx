@@ -75,13 +75,16 @@ export function CorrectionModal({ isOpen, employees, onClose, onSuccess }: Corre
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
-      <div className="relative z-10 w-full max-w-md rounded-xl bg-card border border-border p-6 shadow-xl">
+      <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
+      <div className="relative z-10 w-full max-w-md rounded-lg bg-[#242038] border border-[#3d3655] p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Admin Time Correction</h2>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Admin Time Correction</h2>
+            <p className="text-sm text-[#d4a537]">Add or modify time entries</p>
+          </div>
           <button
             onClick={handleClose}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+            className="p-2 text-[#a0a0b0] hover:text-white hover:bg-[#3d3655] rounded-lg transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -89,13 +92,13 @@ export function CorrectionModal({ isOpen, employees, onClose, onSuccess }: Corre
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-white mb-1.5">
               Employee *
             </label>
             <select
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-lg border border-[#3d3655] bg-[#1a1625] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]"
             >
               <option value="">Select employee</option>
               {employees.map((emp) => (
@@ -107,61 +110,61 @@ export function CorrectionModal({ isOpen, employees, onClose, onSuccess }: Corre
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-white mb-1.5">
               Clock In *
             </label>
             <input
               type="datetime-local"
               value={clockIn}
               onChange={(e) => setClockIn(e.target.value)}
-              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-lg border border-[#3d3655] bg-[#1a1625] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-white mb-1.5">
               Clock Out
             </label>
             <input
               type="datetime-local"
               value={clockOut}
               onChange={(e) => setClockOut(e.target.value)}
-              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-lg border border-[#3d3655] bg-[#1a1625] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-[#a0a0b0] mt-1">
               Leave empty to create an active session
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-white mb-1.5">
               Reason *
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-lg border border-[#3d3655] bg-[#1a1625] px-3 py-2 text-white placeholder-[#a0a0b0] focus:outline-none focus:ring-2 focus:ring-[#6366f1] resize-none"
               placeholder="Explain why this correction is needed..."
             />
           </div>
 
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-[#ef4444]">{error}</p>
           )}
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 rounded-lg border border-border py-2.5 font-medium text-foreground hover:bg-secondary transition-colors"
+              className="flex-1 rounded-lg border border-[#3d3655] py-2.5 font-medium text-white hover:bg-[#3d3655] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 rounded-lg bg-primary py-2.5 font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className="flex-1 rounded-lg bg-[#6366f1] py-2.5 font-medium text-white hover:bg-[#4f46e5] transition-colors disabled:opacity-50"
             >
               {isLoading ? "Saving..." : "Submit Correction"}
             </button>
