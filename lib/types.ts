@@ -7,6 +7,10 @@ export interface Employee {
   hourly_rate: number;
   overtime_rate: number;
   is_active: boolean;
+  photo_url?: string | null;
+  hire_date?: string | null;
+  employment_type: 'hourly' | 'salary' | 'contract';
+  pay_type: 'hourly' | 'salary';
   created_at: string;
   updated_at: string;
 }
@@ -31,9 +35,24 @@ export interface AuditLog {
   employee_id: string | null;
   employee_name: string;
   action: string;
-  details: Record<string, unknown> | null;
+  details: AuditLogDetails | null;
   performed_by: string;
   created_at: string;
+}
+
+export interface AuditLogDetails {
+  old?: Partial<Employee>;
+  new?: Partial<Employee>;
+  session_id?: string;
+  clock_in?: string;
+  clock_out?: string;
+  reason?: string;
+  correction_type?: string;
+  original_value?: string;
+  new_value?: string;
+  role?: string;
+  hourly_rate?: number;
+  [key: string]: unknown;
 }
 
 export interface Schedule {
@@ -47,11 +66,29 @@ export interface Schedule {
   updated_at: string;
 }
 
+export interface WeeklySchedule {
+  monday: DaySchedule;
+  tuesday: DaySchedule;
+  wednesday: DaySchedule;
+  thursday: DaySchedule;
+  friday: DaySchedule;
+  saturday: DaySchedule;
+  sunday: DaySchedule;
+}
+
+export interface DaySchedule {
+  active: boolean;
+  start_time: string;
+  end_time: string;
+}
+
 export interface Holiday {
   id: string;
   name: string;
   date: string;
   is_paid: boolean;
+  status: 'all_closed' | 'optional' | 'skeleton_crew' | 'federal';
+  holiday_type: 'federal' | 'state' | 'company';
   created_at: string;
 }
 
@@ -93,6 +130,7 @@ export interface EmployeeWithSession extends Employee {
   current_session?: TimeSession | null;
   today_hours?: number;
   week_hours?: number;
+  month_hours?: number;
   today_earnings?: number;
 }
 
@@ -102,6 +140,11 @@ export interface EmployeeFormData {
   role: string;
   hourly_rate: number;
   overtime_rate: number;
+  hire_date?: string;
+  employment_type: 'hourly' | 'salary' | 'contract';
+  pay_type: 'hourly' | 'salary';
+  photo_url?: string;
+  weekly_schedule?: WeeklySchedule;
 }
 
 export interface CorrectionFormData {
@@ -116,10 +159,13 @@ export interface HolidayFormData {
   name: string;
   date: string;
   is_paid: boolean;
+  status: 'all_closed' | 'optional' | 'skeleton_crew' | 'federal';
+  holiday_type: 'federal' | 'state' | 'company';
 }
 
 // UI State types
 export type TabType = 'employees' | 'payroll' | 'audit' | 'settings';
+export type ViewType = 'employee-clock' | 'schedule' | 'holiday' | 'dev-time';
 
 export interface TimerState {
   status: 'running' | 'paused' | 'stopped';

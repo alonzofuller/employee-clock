@@ -10,11 +10,27 @@ export function useHolidays() {
     fetcher
   );
 
+  const addHoliday = async (holidayData: Partial<Holiday>) => {
+    await fetch("/api/holidays", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(holidayData),
+    });
+    mutate("/api/holidays");
+  };
+
+  const deleteHoliday = async (id: string) => {
+    await fetch(`/api/holidays/${id}`, { method: "DELETE" });
+    mutate("/api/holidays");
+  };
+
   return {
     holidays: data || [],
     isLoading,
     isError: error,
     mutate: () => mutate("/api/holidays"),
+    addHoliday,
+    deleteHoliday,
   };
 }
 

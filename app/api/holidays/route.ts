@@ -26,6 +26,8 @@ export async function POST(request: Request) {
       name: body.name,
       date: body.date,
       is_paid: body.is_paid ?? true,
+      status: body.status ?? "all_closed",
+      holiday_type: body.holiday_type ?? "company",
     })
     .select()
     .single();

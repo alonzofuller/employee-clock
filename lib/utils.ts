@@ -130,3 +130,28 @@ export function getStatusText(status: string): string {
       return 'Unknown';
   }
 }
+
+// Avatar initials utilities
+export function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+export function getInitialsColor(name: string): string {
+  const colors = [
+    "#6366f1", // indigo
+    "#3b82f6", // blue
+    "#22c55e", // green
+    "#f59e0b", // amber
+    "#ec4899", // pink
+    "#8b5cf6", // violet
+    "#06b6d4", // cyan
+    "#ef4444", // red
+  ];
+  const index = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
+  return colors[index];
+}

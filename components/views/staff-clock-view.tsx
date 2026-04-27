@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useEmployees } from "@/lib/hooks/use-employees";
+import { useEmployees, updateEmployee } from "@/lib/hooks/use-employees";
+import { useSchedules } from "@/lib/hooks/use-settings";
 import { EmployeeCard } from "@/components/employee-card";
 import { PayrollDashboard } from "@/components/payroll-dashboard";
 import { AddEmployeeModal } from "@/components/modals/add-employee-modal";
 import { EditEmployeeModal } from "@/components/modals/edit-employee-modal";
 import { CorrectionModal } from "@/components/modals/correction-modal";
-import type { EmployeeWithSession } from "@/lib/types";
+import type { EmployeeWithSession, Employee, WeeklySchedule, Schedule } from "@/lib/types";
 
 export function StaffClockView() {
   const { employees, isLoading, mutate } = useEmployees();
+  const { schedules, mutate: mutateSchedules } = useSchedules();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCorrectionModal, setShowCorrectionModal] = useState(false);
@@ -25,6 +27,51 @@ export function StaffClockView() {
   const handleCorrection = (employee: EmployeeWithSession) => {
     setSelectedEmployee(employee);
     setShowCorrectionModal(true);
+  };
+
+  const handleSaveEmployee = async (data: { employee: Partial<Employee>; schedules: WeeklySchedule }) => {
+    if (!selectedEmployee) return;
+
+    // Update employee details
+    await updateEmployee(selectedEmployee.id, data.employee);
+
+    // Update schedules
+    const dayMapping: Record<keyof WeeklySchedule, number> = {
+      sunday: 0,
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
+    };
+
+    // Save each day's schedule
+    for (const [day, schedule] of Object.entries(data.schedules)) {
+      const dayOfWeek = dayMapping[day as keyof WeeklySchedule];
+      
+      await fetch("/api/schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          employee_id: selectedEmployee.id,
+          day_of_week: dayOfWeek,
+          start_time: schedule.start_time,
+          end_time: schedule.end_time,
+          is_day_off: !schedule.active,
+        }),
+      });
+    }
+
+    // Refresh data
+    mutate();
+    mutateSchedules();
+  };
+
+  // Get schedules for selected employee
+  const getEmployeeSchedules = (): Schedule[] => {
+    if (!selectedEmployee || !schedules) return [];
+    return schedules.filter(s => s.employee_id === selectedEmployee.id);
   };
 
   // Count active employees and those on break
@@ -102,11 +149,12 @@ export function StaffClockView() {
       <EditEmployeeModal
         isOpen={showEditModal}
         employee={selectedEmployee}
+        schedules={getEmployeeSchedules()}
         onClose={() => {
           setShowEditModal(false);
           setSelectedEmployee(null);
         }}
-        onSuccess={mutate}
+        onSave={handleSaveEmployee}
       />
       <CorrectionModal
         isOpen={showCorrectionModal}

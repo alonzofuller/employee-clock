@@ -129,7 +129,12 @@ export function EmployeeCard({ employee, onEdit, onCorrection, onDeactivate, onV
             {getInitials(employee.name)}
           </div>
           <div>
-            <h3 className="font-semibold text-white">{employee.name}</h3>
+            <button 
+              onClick={() => onEdit(employee)}
+              className="font-semibold text-white hover:text-[#d4a537] hover:underline transition-colors text-left"
+            >
+              {employee.name}
+            </button>
             <p className="text-xs text-[#a0a0b0] uppercase tracking-wider">{employee.role}</p>
           </div>
         </div>
@@ -245,9 +250,9 @@ export function EmployeeCard({ employee, onEdit, onCorrection, onDeactivate, onV
       </div>
 
       {/* Hire Date */}
-      {employee.created_at && (
+      {(employee.hire_date || employee.created_at) && (
         <p className="text-xs text-[#a0a0b0] text-right mt-3">
-          Hire date: {new Date(employee.created_at).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}
+          Hire date: {new Date(employee.hire_date || employee.created_at).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}
         </p>
       )}
     </div>
