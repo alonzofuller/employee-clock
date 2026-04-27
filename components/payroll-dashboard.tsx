@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import type { EmployeeWithSession } from "@/lib/types";
 import { formatCurrency, formatHours } from "@/lib/utils";
 
@@ -11,7 +9,6 @@ interface PayrollDashboardProps {
 }
 
 export function PayrollDashboard({ employees, weeklyCap = 1250 }: PayrollDashboardProps) {
-  const [isAmountsBlurred, setIsAmountsBlurred] = useState(true);
   // Filter out owner (exempt employee)
   const staffEmployees = employees.filter(e => e.role?.toUpperCase() !== "ADMINISTRATOR");
   const ownerEmployee = employees.find(e => e.role?.toUpperCase() === "ADMINISTRATOR");
@@ -39,21 +36,9 @@ export function PayrollDashboard({ employees, weeklyCap = 1250 }: PayrollDashboa
             Real-Time Labor Cost — Owner Excluded
           </p>
         </div>
-        <div className="text-right flex items-start gap-3">
-          <button
-            onClick={() => setIsAmountsBlurred(!isAmountsBlurred)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#1a1625] hover:bg-[#2d2845] text-[#a0a0b0] hover:text-white transition-colors text-xs"
-            title={isAmountsBlurred ? "Show dollar amounts" : "Hide dollar amounts"}
-          >
-            {isAmountsBlurred ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            {isAmountsBlurred ? "Show $" : "Hide $"}
-          </button>
-          <div>
-            <p className="text-xs text-[#a0a0b0]">Updates live with clock activity</p>
-            <p className={`text-sm text-white transition-all duration-200 ${isAmountsBlurred ? "blur-[4px] select-none" : ""}`}>
-              Weekly Cap: {formatCurrency(weeklyCap)}
-            </p>
-          </div>
+        <div className="text-right">
+          <p className="text-xs text-[#a0a0b0]">Updates live with clock activity</p>
+          <p className="text-sm text-white">Weekly Cap: {formatCurrency(weeklyCap)}</p>
         </div>
       </div>
 
@@ -61,7 +46,7 @@ export function PayrollDashboard({ employees, weeklyCap = 1250 }: PayrollDashboa
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-white">Weekly Staff Payroll</span>
-          <span className={`text-sm font-medium transition-all duration-200 ${isAmountsBlurred ? "blur-[4px] select-none" : ""}`}>
+          <span className="text-sm font-medium">
             <span className="text-[#22c55e]">{formatCurrency(staffWeeklyPayroll)} used</span>
             <span className="text-white"> · </span>
             <span className="text-[#22c55e]">{formatCurrency(remainingBudget)} remaining</span>
@@ -80,9 +65,9 @@ export function PayrollDashboard({ employees, weeklyCap = 1250 }: PayrollDashboa
           />
         </div>
         <div className="flex items-center justify-between mt-1 text-xs text-[#a0a0b0]">
-          <span className={`transition-all duration-200 ${isAmountsBlurred ? "blur-[3px] select-none" : ""}`}>$0</span>
-          <span className={`transition-all duration-200 ${isAmountsBlurred ? "blur-[3px] select-none" : ""}`}>80% warning at {formatCurrency(warningThreshold)}</span>
-          <span className={`transition-all duration-200 ${isAmountsBlurred ? "blur-[3px] select-none" : ""}`}>Cap: {formatCurrency(weeklyCap)}</span>
+          <span>$0</span>
+          <span>80% warning at {formatCurrency(warningThreshold)}</span>
+          <span>Cap: {formatCurrency(weeklyCap)}</span>
         </div>
       </div>
 
@@ -117,15 +102,15 @@ export function PayrollDashboard({ employees, weeklyCap = 1250 }: PayrollDashboa
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-[#1a1625] rounded-lg p-3 text-center">
               <p className="text-xs text-[#a0a0b0] mb-1">Daily</p>
-              <p className={`text-lg font-bold text-[#22c55e] transition-all duration-200 ${isAmountsBlurred ? "blur-[4px] select-none" : ""}`}>{formatCurrency(staffDailyPayroll)}</p>
+              <p className="text-lg font-bold text-[#22c55e]">{formatCurrency(staffDailyPayroll)}</p>
             </div>
             <div className="bg-[#1a1625] rounded-lg p-3 text-center">
               <p className="text-xs text-[#a0a0b0] mb-1">Weekly</p>
-              <p className={`text-lg font-bold text-[#22c55e] transition-all duration-200 ${isAmountsBlurred ? "blur-[4px] select-none" : ""}`}>{formatCurrency(staffWeeklyPayroll)}</p>
+              <p className="text-lg font-bold text-[#22c55e]">{formatCurrency(staffWeeklyPayroll)}</p>
             </div>
             <div className="bg-[#1a1625] rounded-lg p-3 text-center">
               <p className="text-xs text-[#a0a0b0] mb-1">Monthly</p>
-              <p className={`text-lg font-bold text-[#22c55e] transition-all duration-200 ${isAmountsBlurred ? "blur-[4px] select-none" : ""}`}>{formatCurrency(staffMonthlyPayroll)}</p>
+              <p className="text-lg font-bold text-[#22c55e]">{formatCurrency(staffMonthlyPayroll)}</p>
             </div>
           </div>
         </div>
@@ -140,13 +125,13 @@ export function PayrollDashboard({ employees, weeklyCap = 1250 }: PayrollDashboa
           <div className="flex items-center gap-6 flex-wrap">
             <span className="font-semibold text-white">{ownerEmployee.name}</span>
             <span className="text-sm text-[#a0a0b0]">
-              Today: {formatHours(ownerEmployee.today_hours || 0)} · <span className={`transition-all duration-200 ${isAmountsBlurred ? "blur-[3px] select-none" : ""}`}>{formatCurrency(ownerEmployee.today_earnings || 0)}</span>
+              Today: {formatHours(ownerEmployee.today_hours || 0)} · {formatCurrency(ownerEmployee.today_earnings || 0)}
             </span>
             <span className="text-sm text-[#a0a0b0]">
-              Week: {formatHours(ownerEmployee.week_hours || 0)} · <span className={`transition-all duration-200 ${isAmountsBlurred ? "blur-[3px] select-none" : ""}`}>{formatCurrency(ownerEmployee.week_earnings || 0)}</span>
+              Week: {formatHours(ownerEmployee.week_hours || 0)} · {formatCurrency(ownerEmployee.week_earnings || 0)}
             </span>
             <span className="text-sm text-[#a0a0b0]">
-              Month: {formatHours(ownerEmployee.month_hours || 0)} · <span className={`transition-all duration-200 ${isAmountsBlurred ? "blur-[3px] select-none" : ""}`}>{formatCurrency(ownerEmployee.month_earnings || 0)}</span>
+              Month: {formatHours(ownerEmployee.month_hours || 0)} · {formatCurrency(ownerEmployee.month_earnings || 0)}
             </span>
           </div>
         </div>
