@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Inter", "Inter Fallback", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", monospace;
+  
+  /* Dark purple/navy color scheme matching the original */
+  --color-background: #1a1625;
+  --color-foreground: #ffffff;
+  --color-card: #242038;
+  --color-card-foreground: #ffffff;
+  --color-popover: #242038;
+  --color-popover-foreground: #ffffff;
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #2d2640;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #3d3655;
+  --color-muted-foreground: #a0a0b0;
+  --color-accent: #22c55e;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #3d3655;
+  --color-input: #2d2640;
+  --color-ring: #6366f1;
+  --radius: 0.5rem;
+  
+  /* Custom accent colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+  --color-gold: #d4a537;
+  --color-pink: #ec4899;
+  --color-sidebar: #1e1a2d;
+  --color-header: #1a1625;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-secondary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
+}
+
+/* Timer display animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(34, 197, 94, 0.5);
+  }
+}
+
+.timer-running {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Card hover effects */
+.employee-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employee-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Gold accent line */
+.gold-line {
+  background: linear-gradient(90deg, var(--color-gold) 0%, transparent 100%);
+  height: 2px;
+}
+
+/* Status indicator colors */
+.status-working {
+  background-color: var(--color-success);
+}
+
+.status-break {
+  background-color: var(--color-warning);
+}
+
+.status-out {
+  background-color: #6b7280;
+}
