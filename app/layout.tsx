@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Employee Time Clock | iTeam Legal Solutions",
-  description: "Employee time tracking and payroll management system for iTeam Legal Solutions",
+  description: "Time tracking and payroll management system for iTeam Legal Solutions",
 };
 
 export const viewport: Viewport = {
