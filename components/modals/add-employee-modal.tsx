@@ -36,6 +36,8 @@ export function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmployeeModa
         role: role.trim() || "Employee",
         hourly_rate: parseFloat(hourlyRate) || 15.0,
         overtime_rate: parseFloat(overtimeRate) || 22.5,
+        employment_type: "hourly",
+        pay_type: "hourly",
       });
       onSuccess();
       onClose();
