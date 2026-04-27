@@ -1,5 +1,3 @@
-"use client";
-
 import useSWR, { mutate } from "swr";
 import type { Employee, EmployeeWithSession, EmployeeFormData, TimeSession } from "@/lib/types";
 

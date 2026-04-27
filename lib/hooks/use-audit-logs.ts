@@ -1,5 +1,3 @@
-"use client";
-
 import useSWR, { mutate } from "swr";
 import type { AuditLog } from "@/lib/types";
 

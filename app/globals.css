@@ -1,44 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 240 10% 11%;
-    --foreground: 0 0% 95%;
-    --card: 240 10% 15%;
-    --card-foreground: 0 0% 95%;
-    --popover: 240 10% 15%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 10% 20%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 240 10% 25%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 160 84% 39%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 10% 25%;
-    --input: 240 10% 20%;
-    --ring: 217 91% 60%;
-    --radius: 0.5rem;
-    
-    /* Custom colors */
-    --success: 160 84% 39%;
-    --warning: 38 92% 50%;
-    --info: 199 89% 48%;
-  }
+@theme inline {
+  --font-sans: "Inter", "Inter Fallback", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", monospace;
+  --color-background: hsl(240 10% 11%);
+  --color-foreground: hsl(0 0% 95%);
+  --color-card: hsl(240 10% 15%);
+  --color-card-foreground: hsl(0 0% 95%);
+  --color-popover: hsl(240 10% 15%);
+  --color-popover-foreground: hsl(0 0% 95%);
+  --color-primary: hsl(217 91% 60%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(240 10% 20%);
+  --color-secondary-foreground: hsl(0 0% 95%);
+  --color-muted: hsl(240 10% 25%);
+  --color-muted-foreground: hsl(240 5% 65%);
+  --color-accent: hsl(160 84% 39%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(240 10% 25%);
+  --color-input: hsl(240 10% 20%);
+  --color-ring: hsl(217 91% 60%);
+  --radius: 0.5rem;
+  
+  /* Custom colors */
+  --color-success: hsl(160 84% 39%);
+  --color-warning: hsl(38 92% 50%);
+  --color-info: hsl(199 89% 48%);
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 /* Custom scrollbar */
@@ -48,17 +46,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--secondary));
+  background: var(--color-secondary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
+  background: var(--color-muted);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: var(--color-muted-foreground);
 }
 
 /* Timer display animation */

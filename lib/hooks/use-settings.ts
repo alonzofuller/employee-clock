@@ -1,5 +1,3 @@
-"use client";
-
 import useSWR, { mutate } from "swr";
 import type { Holiday, Schedule, AppSession } from "@/lib/types";
 
