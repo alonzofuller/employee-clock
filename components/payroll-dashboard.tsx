@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import type { EmployeeWithSession } from "@/lib/types";
 import { formatCurrency, formatHours } from "@/lib/utils";
 
@@ -9,6 +11,7 @@ interface PayrollDashboardProps {
 }
 
 export function PayrollDashboard({ employees, weeklyCap = 1250 }: PayrollDashboardProps) {
+  const [isAmountsBlurred, setIsAmountsBlurred] = useState(true);
   // Filter out owner (exempt employee)
   const staffEmployees = employees.filter(e => e.role?.toUpperCase() !== "ADMINISTRATOR");
   const ownerEmployee = employees.find(e => e.role?.toUpperCase() === "ADMINISTRATOR");

@@ -43,6 +43,7 @@ function getInitials(name: string): string {
 export function EmployeeCard({ employee, onEdit, onCorrection, onDeactivate, onViewLog, onMutate }: EmployeeCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionSeconds, setSessionSeconds] = useState(0);
+  const [isEarningsBlurred, setIsEarningsBlurred] = useState(true);
 
   const session = employee.current_session;
   const isWorking = session?.status === "working";
@@ -177,12 +178,26 @@ export function EmployeeCard({ employee, onEdit, onCorrection, onDeactivate, onV
         </div>
       </div>
 
-      {/* Earnings */}
-      <div className="mb-4">
-        <p className="text-xs text-[#a0a0b0] uppercase">
-          Earnings ({formatCurrency(employee.hourly_rate)}/HR)
-        </p>
-        <p className="text-lg font-bold text-[#22c55e]">
+      {/* Earnings - Click to reveal/hide */}
+      <div 
+        className="mb-4 cursor-pointer group"
+        onClick={() => setIsEarningsBlurred(!isEarningsBlurred)}
+        title={isEarningsBlurred ? "Click to reveal earnings" : "Click to hide earnings"}
+      >
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-[#a0a0b0] uppercase">
+            Earnings
+          </p>
+          <span className={`transition-all duration-200 ${isEarningsBlurred ? "blur-[3px]" : ""}`}>
+            <span className="text-xs text-[#a0a0b0]">
+              ({formatCurrency(employee.hourly_rate)}/HR)
+            </span>
+          </span>
+          <span className="text-[10px] text-[#6b7280] opacity-0 group-hover:opacity-100 transition-opacity">
+            {isEarningsBlurred ? "click to show" : "click to hide"}
+          </span>
+        </div>
+        <p className={`text-lg font-bold text-[#22c55e] transition-all duration-200 select-none ${isEarningsBlurred ? "blur-[4px]" : ""}`}>
           {formatCurrency(employee.today_earnings || 0)}
         </p>
       </div>
